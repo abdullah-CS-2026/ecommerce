@@ -169,8 +169,9 @@ const styles = `
   .pd-a5 { animation-delay:.31s; }
 `;
 
+
 // TanStack Query fetch function by product id
-const fetchProduct = async () => {
+const fetchProduct = async (id) => {
   const response = await axios.get(`/api/products/${id}`);
 
   return response.data;
