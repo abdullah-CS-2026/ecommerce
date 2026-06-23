@@ -1,21 +1,20 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import {Link, useNavigate, useParams } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
 import {
   Star,
   Truck,
   Shield,
-  RefreshCw,
   Plus,
   Minus,
-  CreditCard,
   ChevronRight,
-  Package,
   Clock,
   CheckCircle,
   Tag,
-  Share2,
+  
   ShoppingCart,
   Heart
 } from 'lucide-react';
@@ -170,6 +169,13 @@ const styles = `
   .pd-a5 { animation-delay:.31s; }
 `;
 
+// TanStack Query fetch function by product id
+const fetchProduct = async () => {
+  const response = await axios.get(`/api/products/${id}`);
+
+  return response.data;
+};
+
 const ProductDetail = () => {
   console.log("ProductDetail Render");
   const { id } = useParams();
@@ -177,66 +183,48 @@ const ProductDetail = () => {
   const { addToCart } = useContext(CartContext);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useContext(WishlistContext);
 
-  const [productState, setProductState] = useState({
-    product: null,
-    loading: true,
-    error: null,
-    selectedImage: null
-  });
 
-  const {
-    product,
-    loading,
-    error,
-    selectedImage
-  } = productState;
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('specs');
   const [selColor, setSelColor] = useState(null);
   const [selSize, setSelSize] = useState(null);
 
-
-  // const [product, setProduct]             = useState(null);
-  // const [loading, setLoading]             = useState(true);
-  // const [error, setError]                 = useState(null);
-  // const [quantity, setQuantity]           = useState(1);
-  // const [selectedImage, setSelectedImage] = useState(null);
-  // const [activeTab, setActiveTab]         = useState('specs');
-  // const [selColor, setSelColor]           = useState(null);
-  // const [selSize, setSelSize]             = useState(null);
   const [addedToCart, setAddedToCart]     = useState(false);
 
+
+
+
+// Query automatically:
+// ✅ fetches
+// ✅ caches
+// ✅ retries failed requests
+// ✅ prevents duplicate requests
+
+const {
+  data: product,
+  isLoading: loading,
+  error
+} = useQuery({
+  queryKey: ["product", id],
+
+  // Pass current id to fetch function
+  queryFn: () => fetchProduct(id),
+
+  enabled: !!id,
+
+  // Cache for 5 minutes
+  staleTime: 1000 * 60 * 5,
+});
+
+  const [selectedImage, setSelectedImage] = useState(null);
+
   useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const response = await fetch(`/api/products/${id}`);
+  if (product?.mainImage) {
+    setSelectedImage(product.mainImage);
+  }
+}, [product]);
 
-      if (!response.ok) {
-        throw new Error('Product sync failed.');
-      }
-
-      const data = await response.json();
-
-      setProductState({
-        product: data,
-        loading: false,
-        error: null,
-        selectedImage: data.mainImage
-      });
-
-    } catch (err) {
-      setProductState({
-        product: null,
-        loading: false,
-        error: err.message,
-        selectedImage: null
-      });
-    }
-  };
-
-  if (id) fetchProduct();
-}, [id]);
 
   if (loading) return (
     <div className="pd-root">
@@ -248,12 +236,12 @@ const ProductDetail = () => {
     </div>
   );
 
-  if (error || !product) return (
+  if (error) return (
     <div className="pd-root">
       <style>{styles}</style>
       <div className="pd-wrap"><div className="pd-state">
         <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--c-ink)', marginBottom: 6 }}>Product Not Found</p>
-        <p style={{ fontSize: 13, color: 'var(--c-ink-3)', marginBottom: 20 }}>{error || 'This item may have been de-listed.'}</p>
+        <p style={{ fontSize: 13, color: 'var(--c-ink-3)', marginBottom: 20 }}>{error?.message || 'This item may have been de-listed.'}</p>
         <Link to="/products" style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-accent)', textDecoration: 'none', letterSpacing: '.06em', textTransform: 'uppercase', borderBottom: '1.5px solid currentColor', paddingBottom: 2 }}>← Back to Catalog</Link>
       </div></div>
     </div>
@@ -319,13 +307,12 @@ const ProductDetail = () => {
             {allImages.length > 1 && (
               <div className="gal-thumbs">
                 {allImages.map((img, i) => (
-                  <button key={i} className={`gal-thumb ${selectedImage === img ? 'active' : ''}`}
-                    onClick={() =>
-  setProductState(prev => ({
-    ...prev,
-    selectedImage: img
-  }))
-}>
+                 <button
+  key={i}
+  className={`gal-thumb ${selectedImage === img ? 'active' : ''}`}
+  onClick={() => setSelectedImage(img)}
+>
+
                     <img src={img} alt={`thumb-${i}`}
                       onError={(e) => {
                         if (!e.target.dataset.errorHandled) {
