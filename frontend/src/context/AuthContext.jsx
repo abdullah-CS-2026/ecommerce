@@ -1,6 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Configure axios to send credentials (cookies) with all requests
+axios.defaults.withCredentials = true;
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -9,26 +12,17 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-
-      if (token && storedUser) {
-        setUser(JSON.parse(storedUser));
-        // Refresh user data from backend to get latest role
-        try {
-          const config = { headers: { Authorization: `Bearer ${token}` } };
-          const response = await axios.get('/api/auth/profile', config);
-          const userData = response.data;
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-        } catch (error) {
-          console.error('Failed to refresh user profile', error);
-          if (error.response?.status === 401) {
-            logout();
-          }
-        }
+      try {
+        // Try to fetch profile — if user is authenticated (has cookie), backend will return user data
+        const response = await axios.get('/api/auth/profile');
+        setUser(response.data);
+      } catch (error) {
+        // No valid cookie or token, user is not authenticated
+        console.log('User not authenticated on app load');
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initializeAuth();
@@ -37,11 +31,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
-      const { token, ...userData } = response.data;
+      const userData = response.data;
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
+      // Token is in HTTP-only cookie, automatically sent by browser
       setUser(userData);
       return { success: true };
     } catch (error) {
@@ -69,11 +61,9 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (email, otp) => {
     try {
       const response = await axios.post('/api/auth/verify-email', { email, otp });
-      const { token, message, ...userData } = response.data;
+      const userData = response.data;
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
+      // Token is in HTTP-only cookie, automatically sent by browser
       setUser(userData);
       return { success: true };
     } catch (error) {
@@ -94,24 +84,28 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.message || 'Resend failed' 
       };
     }
-  }
+  };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('cart');
-    setUser(null);
+  const logout = async () => {
+    try {
+      // Call backend logout endpoint to clear the cookie
+      await axios.post('/api/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear frontend state regardless
+      setUser(null);
+      // Clear other stored data if needed
+      localStorage.removeItem('cart');
+    }
   };
 
   const getProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get('/api/auth/profile', config);
+      const response = await axios.get('/api/auth/profile');
       setUser(response.data);
-      localStorage.setItem('user', JSON.stringify(response.data));
     } catch (error) {
-      console.error(error);
+      console.error('Failed to fetch profile:', error);
     }
   };
 

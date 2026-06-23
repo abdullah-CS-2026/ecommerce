@@ -32,6 +32,9 @@ exports.registerUser = async (req, res) => {
     // Set expiry to 10 minutes from now
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
 
+    // Log OTP for development/testing
+    console.log(`\n🔐 OTP Generated for ${email}: ${otpCode}\n`);
+
     user = await User.create({
       name,
       email,
@@ -96,13 +99,21 @@ exports.verifyEmail = async (req, res) => {
     user.otpExpiry = undefined;
     await user.save();
 
+    const token = generateToken(user._id);
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
     res.json({
       message: 'Email successfully verified',
       _id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
+      role: user.role
     });
 
   } catch (error) {
@@ -127,6 +138,10 @@ exports.resendOtp = async (req, res) => {
     const otpCode = generateOTP();
     user.otpCode = otpCode;
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    
+    // Log OTP for development/testing
+    console.log(`\n🔐 OTP Resent for ${user.email}: ${otpCode}\n`);
+    
     await user.save();
 
     const message = `Your new ElectroMart verification code is: ${otpCode}. It is valid for 10 minutes.`;
@@ -151,13 +166,22 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+      const token = generateToken(user._id);
+      
+      // Set HTTP-only cookie
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+
       // No OTP check — log in directly after verifying credentials
       res.json({
         _id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
+        role: user.role
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -181,6 +205,19 @@ exports.getUserProfile = async (req, res) => {
     } else {
       res.status(404).json({ message: 'User not found' });
     }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes — verifies JWT and attaches full user to req.user
+// Protect routes — verifies JWT from cookies and attaches full user to req.user
 exports.protect = async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  // Get token from HTTP-only cookie
+  if (req.cookies && req.cookies.token) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      token = req.cookies.token;
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Fetch the full user document so we can check role

@@ -41,10 +41,7 @@ const AdminProducts = () => {
   const deleteHandler = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`/api/products/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.delete(`/api/products/${id}`);
         setProducts(products.filter((p) => p._id !== id));
       } catch (err) {
         alert(err.response?.data?.message || 'Failed to delete product');

@@ -52,14 +52,12 @@ useEffect(() => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
-        axios.get('/api/user/profile', config),
-        axios.get('/api/user/orders', config),
-        axios.get('/api/user/addresses', config),
-        axios.get('/api/user/wishlist', config)
+        axios.get('/api/user/profile'),
+        axios.get('/api/user/orders'),
+        axios.get('/api/user/addresses'),
+        axios.get('/api/user/wishlist')
       ]);
 
       setProfileData(profileRes.data);
@@ -82,10 +80,8 @@ useEffect(() => {
   const handleUpdateProfile = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const response = await axios.put('/api/user/profile', profileForm, config);
+      const response = await axios.put('/api/user/profile', profileForm);
       setProfileData(response.data.user);
       setEditingProfile(false);
       alert('Profile updated successfully!');
@@ -104,13 +100,11 @@ useEffect(() => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       
       await axios.post('/api/user/change-password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
-      }, config);
+      });
 
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       alert('Password changed successfully!');
@@ -124,10 +118,8 @@ useEffect(() => {
   const handleAddAddress = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const response = await axios.post('/api/user/addresses', addressForm, config);
+      const response = await axios.post('/api/user/addresses', addressForm);
       setAddresses([...addresses, response.data.address]);
       setShowAddressForm(false);
       setAddressForm({
@@ -146,10 +138,8 @@ useEffect(() => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      await axios.delete(`/api/user/addresses/${addressId}`, config);
+      await axios.delete(`/api/user/addresses/${addressId}`);
       setAddresses(addresses.filter(a => a._id !== addressId));
       alert('Address deleted successfully!');
     } catch (error) {

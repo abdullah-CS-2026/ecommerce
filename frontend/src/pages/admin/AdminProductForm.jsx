@@ -300,9 +300,6 @@ const AdminProductForm = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
       // Build payload with ALL required fields explicitly
       const payload = {
         name: formData.name,
@@ -369,10 +366,10 @@ const AdminProductForm = () => {
         console.log('📤 FormData submission with files');
 
         if (isEditMode) {
-          await axios.put(`/api/products/${id}`, fd, { headers: { Authorization: `Bearer ${token}` } });
+          await axios.put(`/api/products/${id}`, fd);
           setMessage({ type: 'success', text: 'Product updated successfully!' });
         } else {
-          await axios.post('/api/products', fd, { headers: { Authorization: `Bearer ${token}` } });
+          await axios.post('/api/products', fd);
           setMessage({ type: 'success', text: 'Product created successfully!' });
         }
       } else {
@@ -380,10 +377,10 @@ const AdminProductForm = () => {
         console.log('📤 JSON submission');
 
         if (isEditMode) {
-          await axios.put(`/api/products/${id}`, payload, config);
+          await axios.put(`/api/products/${id}`, payload);
           setMessage({ type: 'success', text: 'Product updated successfully!' });
         } else {
-          await axios.post('/api/products', payload, config);
+          await axios.post('/api/products', payload);
           setMessage({ type: 'success', text: 'Product created successfully!' });
         }
       }

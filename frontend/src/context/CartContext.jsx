@@ -1,98 +1,58 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  loadCartFromLocalStorage,
+  addToCartLocal,
+  removeFromCartLocal,
+  updateQuantityLocal,
+  clearCartLocal,
+  fetchCart,
+  clearCartAsync
+} from '../redux/slices/cartSlice';
 import { AuthContext } from './AuthContext';
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-  const [isLoadingCart, setIsLoadingCart] = useState(false);
+  const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
   const user = authContext?.user;
 
-  // Fetch cart from backend when user logs in, or from localStorage for anonymous users
+  // Get cart data from Redux store
+  const cartItems = useSelector(state => state.cart.items);
+  const totalItems = useSelector(state => state.cart.totalItems);
+  const totalPrice = useSelector(state => state.cart.totalPrice);
+
+  // Load cart on mount
   useEffect(() => {
     if (user) {
       // User is logged in - fetch their cart from backend
-      fetchCartFromBackend();
+      dispatch(fetchCart());
     } else {
-      // User is logged out - clear cart from UI
-      setCartItems([]);
-      // Load cart from localStorage for anonymous users
-      const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        try {
-          setCartItems(JSON.parse(savedCart));
-        } catch (error) {
-          console.error('Failed to load cart from localStorage:', error);
-          setCartItems([]);
-        }
-      }
+      // User is logged out - load from localStorage
+      dispatch(loadCartFromLocalStorage());
     }
-  }, [user]);
-
-  // Save cart to localStorage whenever it changes (for anonymous users only)
-  useEffect(() => {
-    if (!user) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems, user]);
-
-  const fetchCartFromBackend = async () => {
-    try {
-      setIsLoadingCart(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get('/api/cart', config);
-      
-      // Transform backend cart format to frontend format
-      const items = response.data.cart.items.map(item => ({
-        id: `${item.productId._id}-${item.productId.name}`,
-        product: item.productId,
-        quantity: item.quantity
-      }));
-      setCartItems(items);
-    } catch (error) {
-      console.error('Failed to fetch cart from backend:', error);
-      setCartItems([]);
-    } finally {
-      setIsLoadingCart(false);
-    }
-  };
+  }, [user, dispatch]);
 
   const syncCartToBackend = async (updatedItems) => {
-    if (!user) return; // Only sync for authenticated users
+    if (!user) return;
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.warn('No token found. Cannot sync cart to backend.');
-        return;
-      }
-      
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      // Clear remote cart first
       try {
-        await axios.delete('/api/cart/clear', config);
+        await axios.delete('/api/cart/clear');
       } catch (error) {
-        console.warn('Failed to clear remote cart:', error.response?.status, error.message);
-        // Continue anyway and try to add items
+        console.warn('Failed to clear remote cart:', error.response?.status);
       }
 
-      // Add each item to remote cart
       for (const item of updatedItems) {
         try {
-          await axios.post(
-            '/api/cart/add',
-            {
-              productId: item.product._id,
-              quantity: item.quantity
-            },
-            config
-          );
+          await axios.post('/api/cart/add', {
+            productId: item.product._id,
+            quantity: item.quantity
+          });
         } catch (error) {
-          console.error('Failed to add item to cart:', error.response?.status, error.message);
+          console.error('Failed to add item to cart:', error.response?.status);
         }
       }
     } catch (error) {
@@ -100,111 +60,80 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = (product, quantity = 1) => {
-    setCartItems(prevItems => {
-      // Check if product already exists in cart
-      const existingItem = prevItems.find(item => item.product._id === product._id);
-
-      let updatedItems;
-      if (existingItem) {
-        // Update quantity if product exists
-        updatedItems = prevItems.map(item =>
-          item.product._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        // Add new item
-        updatedItems = [
-          ...prevItems,
-          {
-            id: `${product._id}-${Date.now()}`,
-            product,
-            quantity
-          }
-        ];
-      }
-
-      // Sync to backend if user is logged in
-      if (user) {
-        syncCartToBackend(updatedItems);
-      }
-
-      return updatedItems;
-    });
-  };
-
-  const removeFromCart = (productId) => {
-    setCartItems(prevItems => {
-      const updatedItems = prevItems.filter(item => item.product._id !== productId);
+  const addToCart = useCallback((product, quantity = 1) => {
+    if (user) {
+      // Sync to backend for authenticated users
+      const updatedItems = cartItems.some(item => item.product._id === product._id)
+        ? cartItems.map(item =>
+            item.product._id === product._id
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          )
+        : [...cartItems, { id: `${product._id}-${Date.now()}`, product, quantity }];
       
-      // Sync to backend if user is logged in
-      if (user) {
-        syncCartToBackend(updatedItems);
-      }
+      syncCartToBackend(updatedItems);
+    }
 
-      return updatedItems;
-    });
-  };
+    // Always dispatch to Redux (handles local and synced state)
+    dispatch(addToCartLocal({ product, quantity }));
+  }, [user, cartItems, dispatch]);
 
-  const updateQuantity = (productId, newQuantity) => {
+  const removeFromCart = useCallback((productId) => {
+    if (user) {
+      const updatedItems = cartItems.filter(item => item.product._id !== productId);
+      syncCartToBackend(updatedItems);
+    }
+
+    dispatch(removeFromCartLocal(productId));
+  }, [user, cartItems, dispatch]);
+
+  const updateQuantity = useCallback((productId, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
 
-    setCartItems(prevItems => {
-      const updatedItems = prevItems.map(item =>
+    if (user) {
+      const updatedItems = cartItems.map(item =>
         item.product._id === productId
           ? { ...item, quantity: newQuantity }
           : item
       );
+      syncCartToBackend(updatedItems);
+    }
 
-      // Sync to backend if user is logged in
-      if (user) {
-        syncCartToBackend(updatedItems);
-      }
+    dispatch(updateQuantityLocal({ productId, quantity: newQuantity }));
+  }, [user, cartItems, dispatch, removeFromCart]);
 
-      return updatedItems;
-    });
-  };
-
-  const clearCart = async () => {
-    setCartItems([]);
-    localStorage.removeItem('cart');
+  const clearCart = useCallback(async () => {
+    dispatch(clearCartLocal());
     
-    // Clear from backend if user is logged in
     if (user) {
       try {
-        const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        await axios.delete('/api/cart/clear', config);
+        await dispatch(clearCartAsync());
       } catch (error) {
         console.error('Failed to clear cart from backend:', error);
       }
     }
-  };
+  }, [user, dispatch]);
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((sum, item) => sum + (item.product.discountPrice * item.quantity), 0);
-  };
+  const getTotalPrice = () => totalPrice;
+  const getTotalItems = () => totalItems;
 
-  const getTotalItems = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  const value = useMemo(() => ({
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getTotalPrice,
+    getTotalItems,
+    totalItems,
+    totalPrice
+  }), [cartItems, totalItems, totalPrice]);
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getTotalPrice,
-        getTotalItems
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

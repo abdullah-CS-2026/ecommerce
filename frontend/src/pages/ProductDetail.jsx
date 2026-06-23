@@ -171,34 +171,72 @@ const styles = `
 `;
 
 const ProductDetail = () => {
+  console.log("ProductDetail Render");
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useContext(WishlistContext);
-  const [product, setProduct]             = useState(null);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState(null);
-  const [quantity, setQuantity]           = useState(1);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [activeTab, setActiveTab]         = useState('specs');
-  const [selColor, setSelColor]           = useState(null);
-  const [selSize, setSelSize]             = useState(null);
+
+  const [productState, setProductState] = useState({
+    product: null,
+    loading: true,
+    error: null,
+    selectedImage: null
+  });
+
+  const {
+    product,
+    loading,
+    error,
+    selectedImage
+  } = productState;
+
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('specs');
+  const [selColor, setSelColor] = useState(null);
+  const [selSize, setSelSize] = useState(null);
+
+
+  // const [product, setProduct]             = useState(null);
+  // const [loading, setLoading]             = useState(true);
+  // const [error, setError]                 = useState(null);
+  // const [quantity, setQuantity]           = useState(1);
+  // const [selectedImage, setSelectedImage] = useState(null);
+  // const [activeTab, setActiveTab]         = useState('specs');
+  // const [selColor, setSelColor]           = useState(null);
+  // const [selSize, setSelSize]             = useState(null);
   const [addedToCart, setAddedToCart]     = useState(false);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true); setError(null);
-      try {
-        const response = await fetch(`/api/products/${id}`);
-        if (!response.ok) throw new Error('Product sync failed.');
-        const data = await response.json();
-        setProduct(data);
-        setSelectedImage(data.mainImage);
-      } catch (err) { setError(err.message); }
-      finally { setLoading(false); }
-    };
-    if (id) fetchProduct();
-  }, [id]);
+  const fetchProduct = async () => {
+    try {
+      const response = await fetch(`/api/products/${id}`);
+
+      if (!response.ok) {
+        throw new Error('Product sync failed.');
+      }
+
+      const data = await response.json();
+
+      setProductState({
+        product: data,
+        loading: false,
+        error: null,
+        selectedImage: data.mainImage
+      });
+
+    } catch (err) {
+      setProductState({
+        product: null,
+        loading: false,
+        error: err.message,
+        selectedImage: null
+      });
+    }
+  };
+
+  if (id) fetchProduct();
+}, [id]);
 
   if (loading) return (
     <div className="pd-root">
@@ -245,7 +283,12 @@ const ProductDetail = () => {
           <div className="pd-a pd-a1">
             <div className="gal-main">
               <img src={selectedImage} alt={product.name}
-                onError={e => e.target.src = 'https://via.placeholder.com/600'} />
+                onError={(e) => {
+                  if (!e.target.dataset.errorHandled) {
+                    e.target.dataset.errorHandled = 'true';
+                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="600"%3E%3Crect fill="%23eeebe5" width="600" height="600"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="18"%3EImage not available%3C/text%3E%3C/svg%3E';
+                  }
+                }} />
               <div className="gal-badges">
                 {product.isNewArrival && <span className="gal-badge gal-badge-new">New</span>}
                 {product.discountPercentage > 0 && (
@@ -254,7 +297,7 @@ const ProductDetail = () => {
               </div>
               <button 
                 className="gal-share" 
-                title={isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                title="Wishlist"
                 onClick={(e) => {
                   e.preventDefault();
                   if (isInWishlist(product._id)) {
@@ -277,9 +320,19 @@ const ProductDetail = () => {
               <div className="gal-thumbs">
                 {allImages.map((img, i) => (
                   <button key={i} className={`gal-thumb ${selectedImage === img ? 'active' : ''}`}
-                    onClick={() => setSelectedImage(img)}>
+                    onClick={() =>
+  setProductState(prev => ({
+    ...prev,
+    selectedImage: img
+  }))
+}>
                     <img src={img} alt={`thumb-${i}`}
-                      onError={e => e.target.src = 'https://via.placeholder.com/150'} />
+                      onError={(e) => {
+                        if (!e.target.dataset.errorHandled) {
+                          e.target.dataset.errorHandled = 'true';
+                          e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect fill="%23eeebe5" width="150" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E%3C/text%3E%3C/svg%3E';
+                        }
+                      }} />
                   </button>
                 ))}
               </div>

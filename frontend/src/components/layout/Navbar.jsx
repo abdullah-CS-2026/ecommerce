@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { ShoppingCart, Search, Menu, X, User, LogOut, Heart } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
-import { CartContext } from '../../context/CartContext';
-import { WishlistContext } from '../../context/WishlistContext';
 import Notification from '../Notification';
 
 const Navbar = () => {
@@ -11,10 +10,10 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, logout } = useContext(AuthContext);
-  const { getTotalItems } = useContext(CartContext);
-  const cartCount = getTotalItems();
-const { wishlistItems } = useContext(WishlistContext);
-const wishlistCount = wishlistItems.length;
+
+  // Get cart and wishlist counts from Redux
+  const cartCount = useSelector(state => state.cart.totalItems);
+  const wishlistCount = useSelector(state => state.wishlist.totalItems);
  
   const navLinks = [
     { name: 'Home', path: '/' },

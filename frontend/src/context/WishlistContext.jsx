@@ -1,66 +1,61 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchWishlist,
+  addToWishlistAsync,
+  removeFromWishlistAsync,
+  addToWishlistLocal,
+  removeFromWishlistLocal
+} from '../redux/slices/wishlistSlice';
 import { AuthContext } from './AuthContext';
-
 
 export const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
-  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
   const user = authContext?.user;
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
-  // Fetch wishlist from backend when user logs in
+  // Get wishlist data from Redux store
+  const wishlistItems = useSelector(state => state.wishlist.items);
+  const totalItems = useSelector(state => state.wishlist.totalItems);
+
+  // Load wishlist on mount or when user changes
   useEffect(() => {
     if (user) {
-      fetchWishlistFromBackend();
+      dispatch(fetchWishlist());
     } else {
-      setWishlistItems([]);
+      // Clear wishlist when user logs out
+      // (handled by Redux or you can add a clear action)
     }
-  }, [user]);
+  }, [user, dispatch]);
 
-  const showNotification = (message, type = 'success') => {
+  const showNotification = useCallback((message, type = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification({ show: false, message: '', type: 'success' });
     }, 3000);
-  };
+  }, []);
 
-  const fetchWishlistFromBackend = async () => {
+  const addToWishlist = useCallback(async (productId) => {
     try {
-      setIsLoadingWishlist(true);
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get('/api/user/wishlist', config);
-      
-      // Transform backend wishlist format to frontend format
-      const items = response.data.products?.map(item => item.productId._id) || [];
-      setWishlistItems(items);
-    } catch (error) {
-      console.error('Failed to fetch wishlist:', error);
-      setWishlistItems([]);
-    } finally {
-      setIsLoadingWishlist(false);
-    }
-  };
-
-  const addToWishlist = async (productId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!user) {
         showNotification('Please login to add items to wishlist', 'error');
         return false;
       }
 
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post('/api/user/wishlist', { productId }, config);
+      // Dispatch async action to add to backend
+      const result = await dispatch(addToWishlistAsync(productId));
       
-      // Add to local state
-      setWishlistItems([...wishlistItems, productId]);
-      showNotification('Product added to wishlist', 'success');
-      return true;
+      if (result.type === addToWishlistAsync.fulfilled.type) {
+        showNotification('Product added to wishlist', 'success');
+        return true;
+      } else {
+        showNotification('Failed to add to wishlist', 'error');
+        return false;
+      }
     } catch (error) {
       console.error('Failed to add to wishlist:', error);
       if (error.response?.status === 400) {
@@ -70,43 +65,51 @@ export const WishlistProvider = ({ children }) => {
       }
       return false;
     }
-  };
+  }, [user, dispatch, showNotification]);
 
-  const removeFromWishlist = async (productId) => {
+  const removeFromWishlist = useCallback(async (productId) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!user) {
         showNotification('Please login to manage wishlist', 'error');
         return false;
       }
 
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`/api/user/wishlist/${productId}`, config);
+      // Dispatch async action to remove from backend
+      const result = await dispatch(removeFromWishlistAsync(productId));
       
-      // Remove from local state
-      setWishlistItems(wishlistItems.filter(id => id !== productId));
-      showNotification('Product removed from wishlist', 'success');
-      return true;
+      if (result.type === removeFromWishlistAsync.fulfilled.type) {
+        showNotification('Product removed from wishlist', 'success');
+        return true;
+      } else {
+        showNotification('Failed to remove from wishlist', 'error');
+        return false;
+      }
     } catch (error) {
       console.error('Failed to remove from wishlist:', error);
       showNotification('Failed to remove from wishlist', 'error');
       return false;
     }
-  };
+  }, [user, dispatch, showNotification]);
 
-  const isInWishlist = (productId) => {
+  const isInWishlist = useCallback((productId) => {
     return wishlistItems.includes(productId);
-  };
+  }, [wishlistItems]);
 
-  const value = {
+  const fetchWishlistFromBackend = useCallback(async () => {
+    if (user) {
+      dispatch(fetchWishlist());
+    }
+  }, [user, dispatch]);
+
+  const value = useMemo(() => ({
     wishlistItems,
-    isLoadingWishlist,
+    totalItems,
     notification,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
     fetchWishlistFromBackend,
-  };
+  }), [wishlistItems, totalItems, notification, addToWishlist, removeFromWishlist, isInWishlist, fetchWishlistFromBackend]);
 
   return (
     <WishlistContext.Provider value={value}>
