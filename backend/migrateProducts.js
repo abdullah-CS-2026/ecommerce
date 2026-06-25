@@ -4,6 +4,7 @@ const Product = require('./models/Product');
 
 const migrateProducts = async () => {
   try {
+    console.log('Mongo URI:', process.env.MONGODB_URI);
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
