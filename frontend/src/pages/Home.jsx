@@ -129,7 +129,7 @@ const Home = () => {
               )}
             </div>
             <button className="bg-slate-900 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-blue-600/30">
-              Add
+              Add To Cart
             </button>
           </div>
         </div>
