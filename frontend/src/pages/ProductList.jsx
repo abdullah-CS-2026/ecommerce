@@ -161,7 +161,7 @@ const ProductList = () => {
                     {rating === r && <div className="w-2 h-2 rounded-full bg-amber-400"></div>}
                   </button>
                 ))}
-                <button 
+                <button
                   onClick={() => setRating(0)}
                   className={`w-full text-center py-2 text-xs font-bold tracking-widest uppercase transition-colors ${rating === 0 ? 'text-primary' : 'text-slate-400'}`}
                 >
@@ -196,7 +196,7 @@ const ProductList = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map(product => (
                 <div key={product._id} className="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 flex flex-col h-full relative">
-                  
+
                   {/* Overlay Badges */}
                   <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                     {product.isNewArrival && <span className="bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">New Arrival</span>}
@@ -275,6 +275,6 @@ const ProductList = () => {
 };
 
 // Simple internal helper
-const X = ({size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+const X = ({ size }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>;
 
 export default ProductList;
