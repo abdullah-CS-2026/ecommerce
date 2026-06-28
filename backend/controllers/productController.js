@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const uploadToCloudinary = require("../utils/cloudinaryUpload");
+
 
 exports.getProducts = async (req, res) => {
   try {
@@ -47,22 +49,31 @@ exports.createProduct = async (req, res) => {
     console.log('📥 Received request body:', req.body);
     console.log('📥 Received files:', req.files);
 
-    let productData = { 
-      ...req.body, 
-      createdBy: req.user._id 
+    let productData = {
+      ...req.body,
+      createdBy: req.user._id
     };
 
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
-      const uploadedImagePaths = req.files.map(file => `/uploads/${file.filename}`);
-      // If there are uploaded images and no mainImage set, use the first one
-      if (!productData.mainImage && uploadedImagePaths.length > 0) {
-        productData.mainImage = uploadedImagePaths[0];
+      const uploadedImages = await Promise.all(
+        req.files.map(file => uploadToCloudinary(file))
+      );
+
+      if (!productData.mainImage && uploadedImages.length > 0) {
+        productData.mainImage = uploadedImages[0].url;
       }
-      // Add uploaded images to the images array
-      const existingImages = productData.images ? 
-        (Array.isArray(productData.images) ? productData.images : JSON.parse(productData.images)) : [];
-      productData.images = [...uploadedImagePaths, ...existingImages];
+
+      const existingImages = productData.images
+        ? (Array.isArray(productData.images)
+          ? productData.images
+          : JSON.parse(productData.images))
+        : [];
+
+      productData.images = [
+        ...uploadedImages.map(img => img.url),
+        ...existingImages,
+      ];
     }
 
     console.log('📥 Product data after file handling:', productData);
@@ -75,7 +86,7 @@ exports.createProduct = async (req, res) => {
         productData.colors = productData.colors.split(',').map(c => c.trim()).filter(c => c !== '');
       }
     }
-    
+
     if (typeof productData.sizes === 'string' && productData.sizes !== '') {
       try {
         productData.sizes = JSON.parse(productData.sizes);
@@ -83,7 +94,7 @@ exports.createProduct = async (req, res) => {
         productData.sizes = productData.sizes.split(',').map(s => s.trim()).filter(s => s !== '');
       }
     }
-    
+
     if (typeof productData.specifications === 'string' && productData.specifications !== '') {
       try {
         productData.specifications = JSON.parse(productData.specifications);
@@ -91,7 +102,7 @@ exports.createProduct = async (req, res) => {
         productData.specifications = [];
       }
     }
-    
+
     if (typeof productData.mobileSpecs === 'string' && productData.mobileSpecs !== '') {
       try {
         productData.mobileSpecs = JSON.parse(productData.mobileSpecs);
@@ -134,8 +145,8 @@ exports.createProduct = async (req, res) => {
         messages.push(`${field}: ${error.errors[field].message}`);
       });
     }
-    res.status(500).json({ 
-      message: 'Error creating product', 
+    res.status(500).json({
+      message: 'Error creating product',
       error: error.message,
       details: messages.length > 0 ? messages : undefined
     });
@@ -149,10 +160,21 @@ exports.updateProduct = async (req, res) => {
     if (product) {
       // Handle uploaded images
       if (req.files && req.files.length > 0) {
-        const uploadedImagePaths = req.files.map(file => `/uploads/${file.filename}`);
-        // Add uploaded images to existing images
+        const uploadedImages = await Promise.all(
+          req.files.map(file => uploadToCloudinary(file))
+        );
+
         const existingImages = product.images || [];
-        product.images = [...uploadedImagePaths, ...existingImages];
+
+        product.images = [
+          ...uploadedImages.map(img => img.url),
+          ...existingImages,
+        ];
+
+        // If the product doesn't have a main image, use the first uploaded one
+        if (!product.mainImage && uploadedImages.length > 0) {
+          product.mainImage = uploadedImages[0].url;
+        }
       }
 
       let updateData = { ...req.body };
@@ -165,7 +187,7 @@ exports.updateProduct = async (req, res) => {
           updateData.colors = updateData.colors.split(',').map(c => c.trim()).filter(c => c !== '');
         }
       }
-      
+
       if (typeof updateData.sizes === 'string' && updateData.sizes !== '') {
         try {
           updateData.sizes = JSON.parse(updateData.sizes);
@@ -173,7 +195,7 @@ exports.updateProduct = async (req, res) => {
           updateData.sizes = updateData.sizes.split(',').map(s => s.trim()).filter(s => s !== '');
         }
       }
-      
+
       if (typeof updateData.specifications === 'string' && updateData.specifications !== '') {
         try {
           updateData.specifications = JSON.parse(updateData.specifications);
@@ -181,7 +203,7 @@ exports.updateProduct = async (req, res) => {
           updateData.specifications = [];
         }
       }
-      
+
       if (typeof updateData.mobileSpecs === 'string' && updateData.mobileSpecs !== '') {
         try {
           updateData.mobileSpecs = JSON.parse(updateData.mobileSpecs);

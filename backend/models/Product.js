@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, required: true },
   brand: { type: String, default: '' },
-  
+
   // Pricing
   price: { type: Number, required: true, default: 0 }, // Base price before discounts
   originalPrice: { type: Number, required: true }, // For "was $X" display
