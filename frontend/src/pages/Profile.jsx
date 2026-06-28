@@ -1,5 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from "react-redux";
+import { removeFromWishlistAsync } from "../redux/slices/wishlistSlice"
+
 
 import axios from 'axios';
 import {
@@ -9,15 +12,16 @@ import {
 import { AuthContext } from '../context/AuthContext';
 
 const Profile = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
 
-useEffect(() => {
-  if (location.hash === '#wishlist') {
-    setActiveTab('wishlist');
-  }
-}, [location.hash]);
+  useEffect(() => {
+    if (location.hash === '#wishlist') {
+      setActiveTab('wishlist');
+    }
+  }, [location.hash]);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
@@ -80,7 +84,7 @@ useEffect(() => {
   const handleUpdateProfile = async () => {
     try {
       setLoading(true);
-      
+
       const response = await axios.put('/api/user/profile', profileForm);
       setProfileData(response.data.user);
       setEditingProfile(false);
@@ -100,7 +104,7 @@ useEffect(() => {
 
     try {
       setLoading(true);
-      
+
       await axios.post('/api/user/change-password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
@@ -118,7 +122,7 @@ useEffect(() => {
   const handleAddAddress = async () => {
     try {
       setLoading(true);
-      
+
       const response = await axios.post('/api/user/addresses', addressForm);
       setAddresses([...addresses, response.data.address]);
       setShowAddressForm(false);
@@ -138,7 +142,7 @@ useEffect(() => {
 
     try {
       setLoading(true);
-      
+
       await axios.delete(`/api/user/addresses/${addressId}`);
       setAddresses(addresses.filter(a => a._id !== addressId));
       alert('Address deleted successfully!');
@@ -242,11 +246,10 @@ useEffect(() => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-semibold transition-colors ${
-                    activeTab === tab.id
-                      ? 'text-primary border-b-2 border-primary'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-4 font-semibold transition-colors ${activeTab === tab.id
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   <Icon size={20} />
                   {tab.label}
@@ -487,12 +490,11 @@ useEffect(() => {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-slate-900">Rs. {order.totalAmount.toLocaleString()}</p>
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                              order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                               order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                              order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
+                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                  'bg-yellow-100 text-yellow-700'
+                              }`}>
                               {order.status}
                             </span>
                           </div>
@@ -522,15 +524,26 @@ useEffect(() => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {wishlist.products.map((item) => (
                       <div key={item._id} className="border border-slate-300 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="w-full h-48 bg-slate-200 overflow-hidden">
-                          <img src={item.productId.mainImage} alt={item.productId.name} className="w-full h-full object-cover" />
+                        <div className="w-full bg-slate-200">
+                          <img
+                            src={item.productId.mainImage}
+                            alt={item.productId.name}
+                            className="w-full h-auto"
+                          />
                         </div>
                         <div className="p-4">
                           <h3 className="font-semibold text-slate-900 line-clamp-2">{item.productId.name}</h3>
                           <p className="text-lg font-bold text-primary mt-2">Rs. {item.productId.discountPrice.toLocaleString()}</p>
                           <p className="text-xs text-slate-600 mt-2">Added {formatDate(item.addedAt)}</p>
                         </div>
+                        <button
+                          onClick={() => dispatch(removeFromWishlistAsync(item.productId._id))}
+                          className="mt-3 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+                        >
+                          Remove from Wishlist
+                        </button>
                       </div>
+
                     ))}
                   </div>
                 )}

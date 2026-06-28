@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
 // Async thunk to fetch wishlist from backend
 export const fetchWishlist = createAsyncThunk(
   'wishlist/fetchWishlist',
