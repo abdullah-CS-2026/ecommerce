@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://ecommercewebsite-zeta-nine.vercel.app"
+    "https://technovawebiste.vercel.app"
   ],
   credentials: true
 }));
