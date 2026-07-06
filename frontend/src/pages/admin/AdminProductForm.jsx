@@ -166,7 +166,7 @@ const AdminProductForm = () => {
   const fetchProduct = async () => {
     try {
       setFetching(true);
-      // const res = await axios.get(`/api/products/${id}`);
+      
       await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
       const p = res.data;
       

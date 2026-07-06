@@ -8,6 +8,7 @@ const Home = () => {
 
 
   const fetchProducts = async () => {
+    console.log(import.meta.env.VITE_BACKEND_URL);
     const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
 
     if (!res.ok) {
