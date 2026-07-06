@@ -167,7 +167,7 @@ const AdminProductForm = () => {
     try {
       setFetching(true);
       
-      await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
       const p = res.data;
       
       // Convert specifications object back to string for easier editing

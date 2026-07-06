@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { removeFromWishlistAsync } from "../redux/slices/wishlistSlice"
 
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 import axios from 'axios';
+
 import {
   User, Mail, Phone, Camera, LogOut, Lock, MapPin, Package, Heart,
   Edit2, Trash2, Plus, Check, X, Eye, EyeOff
@@ -19,6 +19,9 @@ import { OrdersTab } from '../components/profile/tabs/OrdersTab';
 import { WishlistTab } from '../components/profile/tabs/WishlistTab';
 import { AddressForm } from '../components/profile/AddressesTab/AddressForm';
 import { AddressCard } from '../components/profile/AddressesTab/AddressCard';
+
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -65,13 +68,6 @@ const Profile = () => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-
-      // const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
-      //   axios.get('/api/user/profile'),
-      //   axios.get('/api/user/orders'),
-      //   axios.get('/api/user/addresses'),
-      //   axios.get('/api/user/wishlist')
-      // ]);
 
       const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
   axios.get(`${baseUrl}/api/user/profile`),

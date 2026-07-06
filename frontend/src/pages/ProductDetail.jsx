@@ -172,9 +172,7 @@ const styles = `
 
 // TanStack Query fetch function by product id
 const fetchProduct = async (id) => {
-  const response = await axios.get(
-    `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
-  );
+  const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
 
   return response.data;
 };
