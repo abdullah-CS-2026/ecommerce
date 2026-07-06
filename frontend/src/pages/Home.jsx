@@ -8,7 +8,7 @@ const Home = () => {
 
 
   const fetchProducts = async () => {
-    const res = await fetch('/api/products');
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
 
     if (!res.ok) {
       throw new Error('Failed to fetch products');

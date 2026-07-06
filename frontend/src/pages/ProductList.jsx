@@ -27,7 +27,7 @@ const ProductList = () => {
       setLoading(true);
       setFetchError(null);
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
         if (!res.ok) throw new Error('Failed to load professional inventory.');
         const data = await res.json();
         setAllProducts(data);

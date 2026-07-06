@@ -28,7 +28,7 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/products');
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
       setProducts(res.data);
     } catch (err) {
       setError('Failed to fetch products');
@@ -41,7 +41,7 @@ const AdminProducts = () => {
   const deleteHandler = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`/api/products/${id}`);
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
         setProducts(products.filter((p) => p._id !== id));
       } catch (err) {
         alert(err.response?.data?.message || 'Failed to delete product');

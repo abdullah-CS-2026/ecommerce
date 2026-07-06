@@ -166,7 +166,8 @@ const AdminProductForm = () => {
   const fetchProduct = async () => {
     try {
       setFetching(true);
-      const res = await axios.get(`/api/products/${id}`);
+      // const res = await axios.get(`/api/products/${id}`);
+      await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
       const p = res.data;
       
       // Convert specifications object back to string for easier editing
@@ -366,10 +367,10 @@ const AdminProductForm = () => {
         console.log('📤 FormData submission with files');
 
         if (isEditMode) {
-          await axios.put(`/api/products/${id}`, fd);
+          await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`, fd);
           setMessage({ type: 'success', text: 'Product updated successfully!' });
         } else {
-          await axios.post('/api/products', fd);
+          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/products`, fd);
           setMessage({ type: 'success', text: 'Product created successfully!' });
         }
       } else {
@@ -377,10 +378,10 @@ const AdminProductForm = () => {
         console.log('📤 JSON submission');
 
         if (isEditMode) {
-          await axios.put(`/api/products/${id}`, payload);
+          await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`, payload);
           setMessage({ type: 'success', text: 'Product updated successfully!' });
         } else {
-          await axios.post('/api/products', payload);
+          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/products`, payload);
           setMessage({ type: 'success', text: 'Product created successfully!' });
         }
       }

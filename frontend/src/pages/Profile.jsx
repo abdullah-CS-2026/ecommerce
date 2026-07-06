@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { removeFromWishlistAsync } from "../redux/slices/wishlistSlice"
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 import axios from 'axios';
 import {
@@ -65,13 +66,19 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
-        axios.get('/api/user/profile'),
-        axios.get('/api/user/orders'),
-        axios.get('/api/user/addresses'),
-        axios.get('/api/user/wishlist')
-      ]);
+      // const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
+      //   axios.get('/api/user/profile'),
+      //   axios.get('/api/user/orders'),
+      //   axios.get('/api/user/addresses'),
+      //   axios.get('/api/user/wishlist')
+      // ]);
 
+      const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
+  axios.get(`${baseUrl}/api/user/profile`),
+  axios.get(`${baseUrl}/api/user/orders`),
+  axios.get(`${baseUrl}/api/user/addresses`),
+  axios.get(`${baseUrl}/api/user/wishlist`)
+]);
       setProfileData(profileRes.data);
       setOrders(ordersRes.data);
       setAddresses(addressesRes.data);
@@ -93,7 +100,7 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      const response = await axios.put('/api/user/profile', profileForm);
+      const response = await axios.put(`${baseUrl}/api/user/profile`, profileForm);
       setProfileData(response.data.user);
       setEditingProfile(false);
       alert('Profile updated successfully!');
@@ -113,7 +120,7 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      await axios.post('/api/user/change-password', {
+      await axios.post(`${baseUrl}/api/user/change-password`, {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
       });
@@ -131,7 +138,7 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post('/api/user/addresses', addressForm);
+      const response = await axios.post(`${baseUrl}/api/user/addresses`, addressForm);
       setAddresses([...addresses, response.data.address]);
       setShowAddressForm(false);
       setAddressForm({
@@ -151,7 +158,7 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      await axios.delete(`/api/user/addresses/${addressId}`);
+      await axios.delete(`${baseUrl}/api/user/addresses/${addressId}`);
       setAddresses(addresses.filter(a => a._id !== addressId));
       alert('Address deleted successfully!');
     } catch (error) {
