@@ -12,7 +12,11 @@ import {
 } from '../redux/slices/cartSlice';
 import { AuthContext } from './AuthContext';
 
+
+
 export const CartContext = createContext();
+
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const CartProvider = ({ children }) => {
   const dispatch = useDispatch();
@@ -40,14 +44,14 @@ export const CartProvider = ({ children }) => {
     
     try {
       try {
-        await axios.delete('/api/cart/clear');
+        await axios.delete(`${baseUrl}/api/cart/clear`);
       } catch (error) {
         console.warn('Failed to clear remote cart:', error.response?.status);
       }
 
       for (const item of updatedItems) {
         try {
-          await axios.post('/api/cart/add', {
+          await axios.post(`${baseUrl}/api/cart/add`, {
             productId: item.product._id,
             quantity: item.quantity
           });
