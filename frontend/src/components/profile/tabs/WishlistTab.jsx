@@ -2,6 +2,7 @@ import {
     User, Mail, Phone, Camera, LogOut, Lock, MapPin, Package, Heart,
     Edit2, Trash2, Plus, Check, X, Eye, EyeOff
 } from 'lucide-react';
+import { removeFromWishlistAsync } from '../../../redux/slices/wishlistSlice';
 
 export const WishlistTab = ({ wishlist,
     dispatch,
