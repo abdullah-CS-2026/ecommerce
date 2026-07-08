@@ -6,6 +6,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
   withCredentials: true,
 });
+console.log("ENV =", import.meta.env.VITE_BACKEND_URL);
+console.log("BASE URL =", api.defaults.baseURL);
 
 // Async thunk to fetch cart from backend
 export const fetchCart = createAsyncThunk(
