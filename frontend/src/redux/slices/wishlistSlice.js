@@ -1,17 +1,25 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+// Create axios instance
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_URL,
+  withCredentials: true,
+});
 
 // Async thunk to fetch wishlist from backend
 export const fetchWishlist = createAsyncThunk(
   'wishlist/fetchWishlist',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/api/user/wishlist');
-      const items = response.data.products?.map(item => item.productId._id) || [];
+      const response = await api.get('/api/user/wishlist');
+      const items =
+        response.data.products?.map(item => item.productId._id) || [];
       return items;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch wishlist');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch wishlist'
+      );
     }
   }
 );
@@ -21,10 +29,12 @@ export const addToWishlistAsync = createAsyncThunk(
   'wishlist/addToWishlist',
   async (productId, { rejectWithValue }) => {
     try {
-      await axios.post('/api/user/wishlist', { productId });
+      await api.post('/api/user/wishlist', { productId });
       return productId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to add to wishlist');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to add to wishlist'
+      );
     }
   }
 );
@@ -34,10 +44,12 @@ export const removeFromWishlistAsync = createAsyncThunk(
   'wishlist/removeFromWishlist',
   async (productId, { rejectWithValue }) => {
     try {
-      await axios.delete(`/api/user/wishlist/${productId}`);
+      await api.delete(`/api/user/wishlist/${productId}`);
       return productId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to remove from wishlist');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to remove from wishlist'
+      );
     }
   }
 );
@@ -46,7 +58,7 @@ const initialState = {
   items: [],
   isLoading: false,
   error: null,
-  totalItems: 0
+  totalItems: 0,
 };
 
 const wishlistSlice = createSlice({
@@ -55,6 +67,7 @@ const wishlistSlice = createSlice({
   reducers: {
     addToWishlistLocal: (state, action) => {
       const productId = action.payload;
+
       if (!state.items.includes(productId)) {
         state.items.push(productId);
         state.totalItems = state.items.length;
@@ -67,15 +80,15 @@ const wishlistSlice = createSlice({
       state.totalItems = state.items.length;
     },
 
-    clearWishlistLocal: (state) => {
+    clearWishlistLocal: state => {
       state.items = [];
       state.totalItems = 0;
-    }
+    },
   },
-  extraReducers: (builder) => {
-    // Fetch wishlist
+
+  extraReducers: builder => {
     builder
-      .addCase(fetchWishlist.pending, (state) => {
+      .addCase(fetchWishlist.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -87,30 +100,24 @@ const wishlistSlice = createSlice({
       .addCase(fetchWishlist.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      });
-
-    // Add to wishlist
-    builder
+      })
       .addCase(addToWishlistAsync.fulfilled, (state, action) => {
         if (!state.items.includes(action.payload)) {
           state.items.push(action.payload);
           state.totalItems = state.items.length;
         }
-      });
-
-    // Remove from wishlist
-    builder
+      })
       .addCase(removeFromWishlistAsync.fulfilled, (state, action) => {
         state.items = state.items.filter(id => id !== action.payload);
         state.totalItems = state.items.length;
       });
-  }
+  },
 });
 
 export const {
   addToWishlistLocal,
   removeFromWishlistLocal,
-  clearWishlistLocal
+  clearWishlistLocal,
 } = wishlistSlice.actions;
 
 export default wishlistSlice.reducer;
