@@ -79,7 +79,7 @@ console.log("STEP 4");
         otpExpiry,
       });
     }
-    await tempUser.save()
+    console.log("STEP 5");
 
     const message = `Your ElectroMart verification code is: ${otpCode}
 
@@ -108,8 +108,7 @@ return res.status(200).json({
     console.error(error);
 
     return res.status(500).json({
-        message: error.message,
-        error
+        message: error.message
     });
 }
 };
