@@ -6,7 +6,7 @@ const sendEmail = async ({ email, subject, message }) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"ElectroMart" <${process.env.EMAIL_USER}>`,
+      from: `"ElectroMart" <${process.env.EMAIL_FROM}>`,
       to: email,
       subject,
       text: message,
@@ -21,11 +21,15 @@ const sendEmail = async ({ email, subject, message }) => {
 
     return info;
   } catch (err) {
-    console.error("❌ EMAIL ERROR");
-    console.error(err);
+  console.error("EMAIL ERROR");
+  console.error(err);
+  console.error("code:", err.code);
+  console.error("response:", err.response);
+  console.error("responseCode:", err.responseCode);
+  console.error("command:", err.command);
 
-    throw err;
-  }
+  throw err;
+}
 };
 
 module.exports = sendEmail;
