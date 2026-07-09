@@ -60,12 +60,13 @@ exports.registerUser = async (req, res) => {
       });
 
     } catch (err) {
-      console.error(err);
-      user.otpCode = undefined;
-      user.otpExpiry = undefined;
-      await user.save();
-      return res.status(500).json({ message: 'Email could not be sent. Please contact support.' });
-    }
+    console.error("EMAIL ERROR");
+    console.error(err);
+
+    return res.status(500).json({
+        message: err.message
+    });
+}
 
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
