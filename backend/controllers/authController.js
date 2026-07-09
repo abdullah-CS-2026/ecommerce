@@ -82,24 +82,22 @@ exports.registerUser = async (req, res) => {
 
 This OTP is valid for 10 minutes.`;
 
-    // await sendEmail({
-    //   email: tempUser.email,
-    //   subject: "ElectroMart Email Verification",
-    //   message,
-    // });
-console.log("OTP:", otpCode);
+ console.log("📧 About to send email...");
+
+await sendEmail({
+  email: tempUser.email,
+  subject: "ElectroMart Email Verification",
+  message,
+});
+
+console.log("✅ sendEmail() finished");
 
 return res.status(200).json({
-    success: true,
-    email: tempUser.email,
-    otp: otpCode, // ONLY FOR TESTING
+  success: true,
+  email: tempUser.email,
+  message: "OTP has been sent successfully.",
 });
-    // return res.status(200).json({
-    //   success: true,
-    //   email: tempUser.email,
-    //   message:
-    //     "OTP has been sent successfully.",
-    // });
+
 
   } catch (error) {
     console.error(error);

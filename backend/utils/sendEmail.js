@@ -1,25 +1,30 @@
 const transporter = require("../config/mail");
 
 const sendEmail = async ({ email, subject, message }) => {
+  console.log("📧 Sending email...");
+  console.log("To:", email);
+
   try {
     const info = await transporter.sendMail({
       from: `"ElectroMart" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: subject,
+      subject,
       text: message,
       html: `
-        <div style="font-family: Arial, sans-serif;">
-          <h2>ElectroMart</h2>
-          <p>${message}</p>
-        </div>
+        <h2>ElectroMart</h2>
+        <p>${message}</p>
       `,
     });
 
-    console.log("✅ Email sent:", info.messageId);
+    console.log("✅ Email sent successfully");
+    console.log(info);
+
     return info;
-  } catch (error) {
-    console.error("❌ Email Error:", error);
-    throw error;
+  } catch (err) {
+    console.error("❌ EMAIL ERROR");
+    console.error(err);
+
+    throw err;
   }
 };
 
