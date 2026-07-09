@@ -1,24 +1,48 @@
-const transporter = require("../config/mail");
+const axios = require("axios");
 
 const sendEmail = async ({ email, subject, message }) => {
-  console.log("========== EMAIL START ==========");
-  console.log("EMAIL_USER:", process.env.EMAIL_USER);
-  console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
-  console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+  try {
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "ElectroDigital",
+          email: process.env.EMAIL_FROM,
+        },
+        to: [
+          {
+            email,
+          },
+        ],
+        subject,
+        htmlContent: `
+          <h2>ElectroMart</h2>
+          <p>${message}</p>
+        `,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  console.log("Sending to:", email);
+    console.log("✅ Email Sent");
+    console.log(response.data);
 
-  const info = await transporter.sendMail({
-    from: `"ElectroMart" <${process.env.EMAIL_FROM}>`,
-    to: email,
-    subject,
-    text: message,
-  });
+    return response.data;
+  } catch (err) {
+    console.error("❌ Brevo API Error");
 
-  console.log("EMAIL SENT");
-  console.log(info);
+    if (err.response) {
+      console.error(err.response.data);
+    } else {
+      console.error(err.message);
+    }
 
-  return info;
+    throw err;
+  }
 };
 
 module.exports = sendEmail;
