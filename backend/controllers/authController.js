@@ -1,7 +1,8 @@
 const User = require('../models/User');
+const TempUser = require("../models/TempUser")
 const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
 const sendEmail = require('../utils/sendEmail');
-const crypto = require('crypto');
 
 // Generate JWT for authenticated sessions
 const generateToken = (id) => {
@@ -20,56 +21,86 @@ exports.registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please add all fields' });
+      return res.status(400).json({
+        message: "Please fill all fields.",
+      });
     }
 
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Check if account already exists
+    const existingUser = await User.findOne({
+      email: email.toLowerCase(),
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email is already registered.",
+      });
     }
 
+    // Check temporary signup
+    let tempUser = await TempUser.findOne({
+      email: email.toLowerCase(),
+    });
+
+    // Generate OTP
     const otpCode = generateOTP();
-    // Set expiry to 10 minutes from now
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
 
-    // Log OTP for development/testing
-    console.log(`\n🔐 OTP Generated for ${email}: ${otpCode}\n`);
+    const otpExpiry = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
-    user = await User.create({
-      name,
-      email,
+    console.log(
+      `\n🔐 OTP for ${email}: ${otpCode}\n`
+    );
+
+    // Hash password BEFORE storing
+    const salt = await bcrypt.genSalt(10);
+
+    const hashedPassword = await bcrypt.hash(
       password,
-      otpCode,
-      otpExpiry,
-      isEmailVerified: false
+      salt
+    );
+
+    if (tempUser) {
+      tempUser.name = name; 
+      tempUser.password = hashedPassword;
+      tempUser.otpCode = otpCode;
+      tempUser.otpExpiry = otpExpiry;
+
+      await tempUser.save();
+    } else {
+      tempUser = await TempUser.create({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        otpCode,
+        otpExpiry,
+      });
+    }
+
+    const message = `Your ElectroMart verification code is: ${otpCode}
+
+This OTP is valid for 10 minutes.`;
+
+    await sendEmail({
+      email: tempUser.email,
+      subject: "ElectroMart Email Verification",
+      message,
     });
 
-    try {
-      // Send OTP Email
-      const message = `Your ElectroMart verification code is: ${otpCode}. It is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`;
-      
-      await sendEmail({
-        email: user.email,
-        subject: 'ElectroMart - Email Verification OTP',
-        message
-      });
-
-      res.status(201).json({
-        message: 'Registration successful. An OTP has been sent to your email to verify your account.',
-        email: user.email
-      });
-
-    } catch (err) {
-    console.error("EMAIL ERROR");
-    console.error(err);
-
-    return res.status(500).json({
-        message: err.message
+    return res.status(200).json({
+      success: true,
+      email: tempUser.email,
+      message:
+        "OTP has been sent successfully.",
     });
-}
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Registration failed.",
+    });
   }
 };
 
@@ -77,48 +108,89 @@ exports.verifyEmail = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.isEmailVerified) {
-      return res.status(400).json({ message: 'Email is already verified' });
-    }
-
-    if (user.otpCode !== otp.toString()) {
-      return res.status(400).json({ message: 'Invalid OTP code' });
-    }
-
-    if (user.otpExpiry < Date.now()) {
-      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
-    }
-
-    // Success
-    user.isEmailVerified = true;
-    user.otpCode = undefined;
-    user.otpExpiry = undefined;
-    await user.save();
-
-    const token = generateToken(user._id);
-    
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    // Find temporary user
+    const tempUser = await TempUser.findOne({
+      email: email.toLowerCase(),
     });
 
-    res.json({
-      message: 'Email successfully verified',
-      _id: user.id,
+    if (!tempUser) {
+      return res.status(404).json({
+        message:
+          "Registration session expired. Please register again.",
+      });
+    }
+
+    // Check OTP
+    if (tempUser.otpCode !== otp.toString()) {
+      return res.status(400).json({
+        message: "Invalid OTP.",
+      });
+    }
+
+    // Check expiry
+    if (tempUser.otpExpiry < new Date()) {
+      await TempUser.deleteOne({
+        _id: tempUser._id,
+      });
+
+      return res.status(400).json({
+        message:
+          "OTP expired. Please register again.",
+      });
+    }
+
+    // Safety check
+    const existingUser = await User.findOne({
+      email: tempUser.email,
+    });
+
+    if (existingUser) {
+      await TempUser.deleteOne({
+        _id: tempUser._id,
+      });
+
+      return res.status(400).json({
+        message: "User already exists.",
+      });
+    }
+
+    // Create verified user
+    const user = await User.create({
+      name: tempUser.name,
+      email: tempUser.email,
+      password: tempUser.password,
+      role: "user",
+    });
+
+    // Delete temporary user
+    await TempUser.deleteOne({
+      _id: tempUser._id,
+    });
+
+    // Generate JWT
+    const token = generateToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Email verified successfully.",
+      _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
     });
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Verification failed.",
+    });
   }
 };
 
@@ -126,37 +198,47 @@ exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    // Find temporary user
+    const tempUser = await TempUser.findOne({
+      email: email.toLowerCase(),
+    });
 
-    if (user.isEmailVerified) {
-      return res.status(400).json({ message: 'Email is already verified' });
+    if (!tempUser) {
+      return res.status(404).json({
+        message: "Registration session expired. Please register again.",
+      });
     }
 
     // Generate new OTP
     const otpCode = generateOTP();
-    user.otpCode = otpCode;
-    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    
-    // Log OTP for development/testing
-    console.log(`\n🔐 OTP Resent for ${user.email}: ${otpCode}\n`);
-    
-    await user.save();
 
-    const message = `Your new ElectroMart verification code is: ${otpCode}. It is valid for 10 minutes.`;
-      
+    tempUser.otpCode = otpCode;
+    tempUser.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    await tempUser.save();
+
+    console.log(`\n🔐 New OTP for ${tempUser.email}: ${otpCode}\n`);
+
+    const message = `Your new ElectroMart verification code is: ${otpCode}
+
+This OTP is valid for 10 minutes.`;
+
     await sendEmail({
-      email: user.email,
-      subject: 'ElectroMart - New Email Verification OTP',
-      message
+      email: tempUser.email,
+      subject: "ElectroMart Email Verification",
+      message,
     });
 
-    res.json({ message: 'A new OTP has been sent to your email.' });
+    return res.status(200).json({
+      message: "A new OTP has been sent successfully.",
+    });
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Failed to resend OTP.",
+    });
   }
 };
 
