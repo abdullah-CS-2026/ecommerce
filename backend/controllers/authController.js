@@ -19,7 +19,7 @@ const generateOTP = () => {
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
+console.log("STEP 1");
     if (!name || !email || !password) {
       return res.status(400).json({
         message: "Please fill all fields.",
@@ -30,6 +30,7 @@ exports.registerUser = async (req, res) => {
     const existingUser = await User.findOne({
       email: email.toLowerCase(),
     });
+    console.log("STEP 2");
 
     if (existingUser) {
       return res.status(400).json({
@@ -42,6 +43,7 @@ exports.registerUser = async (req, res) => {
       email: email.toLowerCase(),
     });
 
+    console.log("STEP 3");
     // Generate OTP
     const otpCode = generateOTP();
 
@@ -60,7 +62,7 @@ exports.registerUser = async (req, res) => {
       password,
       salt
     );
-
+console.log("STEP 4");
     if (tempUser) {
       tempUser.name = name; 
       tempUser.password = hashedPassword;
@@ -77,19 +79,21 @@ exports.registerUser = async (req, res) => {
         otpExpiry,
       });
     }
+    await tempUser.save()
 
     const message = `Your ElectroMart verification code is: ${otpCode}
 
 This OTP is valid for 10 minutes.`;
 
  console.log("📧 About to send email...");
-
+console.log("STEP 6");
 await sendEmail({
   email: tempUser.email,
   subject: "ElectroMart Email Verification",
   message,
 });
 
+console.log("STEP 7");
 console.log("✅ sendEmail() finished");
 
 return res.status(200).json({
@@ -100,12 +104,14 @@ return res.status(200).json({
 
 
   } catch (error) {
+    console.error("REGISTER ERROR");
     console.error(error);
 
     return res.status(500).json({
-      message: "Registration failed.",
+        message: error.message,
+        error
     });
-  }
+}
 };
 
 exports.verifyEmail = async (req, res) => {
