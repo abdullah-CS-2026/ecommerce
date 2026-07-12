@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye, ArrowRight, Heart, Truck, ShieldCheck, Headphones, Sparkles } from 'lucide-react';
 import { WishlistContext } from '../context/WishlistContext';
+import CategorySection from '../components/Home.jsx/CategorySection';
 
 const Home = () => {
 
@@ -141,72 +142,69 @@ const Home = () => {
   };
 
   return (
+    
     <div className="min-h-screen bg-white">
-      {/* HERO */}
-      <section className="relative bg-slate-950 text-white overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=1920"
-            alt="Hero Background"
-            className="w-full h-full object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/30" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.25),transparent_50%)]" />
+     {/* HERO */}
+<section  className="relative bg-slate-950 text-white overflow-hidden ">
+      <img
+  src="https://mir-s3-cdn-cf.behance.net/project_modules/1400_opt_1/600eed246111229.69bc4d67f2ab6.png"
+  alt="Hero Background"
+  className="w-full h-full object-contain bg-slate-950"
+/>
+
+  {/* Optional Dark Overlay */}
+  <div className="absolute inset-0 bg-black/30"></div>
+
+  {/* Hero Content */}
+  <div className="absolute inset-0 z-10 flex items-center">
+    <div className="container mx-auto px-6 lg:px-12">
+
+      <div className="max-w-xl">
+
+        <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full mb-6">
+          <Sparkles size={14} className="text-blue-400" />
+          <span className="text-xs font-medium tracking-wider uppercase">
+            New Arrivals 2026
+          </span>
         </div>
 
-        {/* Decorative orbs */}
-        <div className="absolute top-1/4 right-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-1/3 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+          Next-Gen Tech
+          <br />
+          <span className="text-cyan-400">
+            For Your Lifestyle
+          </span>
+        </h1>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-28 md:py-36 lg:py-52 flex flex-col items-start">
-          <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full mb-6 animate-fade-in-up">
-            <Sparkles size={14} className="text-blue-400" />
-            <span className="text-xs font-medium tracking-wider uppercase text-slate-200">New Arrivals 2026</span>
-          </div>
+        <p className="text-lg text-gray-200 mb-10">
+          Discover the latest in electronics — from state-of-the-art
+          smartphones to immersive home entertainment systems.
+        </p>
 
-          <h1 className="text-5xl md:text-6xl lg:text-8xl font-extrabold mb-6 leading-[1.05] tracking-tight max-w-3xl animate-fade-in-up animation-delay-100">
-            Next-Gen Tech
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
-              For Your Lifestyle
-            </span>
-          </h1>
+        <div className="flex gap-4">
+          <Link
+            to="/products"
+            className="bg-white text-slate-900 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition"
+          >
+            Shop Now
+          </Link>
 
-          <p className="text-lg md:text-xl text-slate-300/90 mb-10 max-w-xl leading-relaxed animate-fade-in-up animation-delay-200">
-            Discover the latest in electronics — from state-of-the-art smartphones to immersive home entertainment systems.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-300">
-            <Link
-              to="/products"
-              className="group bg-white text-slate-900 px-8 py-4 rounded-full font-semibold transition-all hover:shadow-2xl hover:shadow-white/20 flex items-center justify-center gap-2"
-            >
-              Shop Now
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link
-              to="/categories"
-              className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/15 px-8 py-4 rounded-full font-semibold transition-all flex items-center justify-center"
-            >
-              Browse Categories
-            </Link>
-          </div>
-
-          {/* Stats strip */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg animate-fade-in-up animation-delay-300">
-            {[
-              { n: '50K+', l: 'Happy Customers' },
-              { n: '1.2K+', l: 'Products' },
-              { n: '4.9★', l: 'Avg. Rating' },
-            ].map((s) => (
-              <div key={s.l}>
-                <div className="text-2xl md:text-3xl font-bold text-white">{s.n}</div>
-                <div className="text-xs text-slate-400 mt-1 tracking-wide">{s.l}</div>
-              </div>
-            ))}
-          </div>
+          <Link
+            to="/categories"
+            className="border border-white px-8 py-4 rounded-full hover:bg-white hover:text-slate-900 transition"
+          >
+            Browse Categories
+          </Link>
         </div>
-      </section>
+
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<CategorySection/>
 
       {/* FEATURED PRODUCTS */}
       <section className="py-24 bg-gradient-to-b from-slate-50 to-white">
