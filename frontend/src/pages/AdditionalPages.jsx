@@ -69,7 +69,7 @@ export const ContactUs = () => (
              <MapPin className="text-primary w-8 h-8 mr-4 shrink-0" />
              <div>
                <h3 className="font-semibold text-lg mb-1">Our Location</h3>
-               <p className="text-slate-400">123 Tech Avenue, Silicon Valley<br/>CA 94025, United States</p>
+               <p className="text-slate-400">Quainchi Metro Station, Lahore<br/></p>
              </div>
            </div>
            
@@ -77,7 +77,7 @@ export const ContactUs = () => (
              <Phone className="text-primary w-8 h-8 mr-4 shrink-0" />
              <div>
                <h3 className="font-semibold text-lg mb-1">Call Us</h3>
-               <p className="text-slate-400">+1 (800) 123-4567<br/>Mon - Fri, 9am - 6pm EST</p>
+               <p className="text-slate-400">+923413348205<br/>Mon - Fri, 9am - 6pm EST</p>
              </div>
            </div>
            

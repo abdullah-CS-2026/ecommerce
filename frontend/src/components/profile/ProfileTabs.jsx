@@ -1,5 +1,6 @@
 import { User, Lock, MapPin, Package, Heart } from "lucide-react";
 
+
 export const ProfileTabs = ({ activeTab, setActiveTab }) => {
     const tabs = [
         { id: "profile", label: "Profile", icon: User },

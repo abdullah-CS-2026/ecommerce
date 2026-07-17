@@ -69,6 +69,13 @@ const Profile = () => {
     try {
       setLoading(true);
 
+      // const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
+      //   axios.get('/api/user/profile'),
+      //   axios.get('/api/user/orders'),
+      //   axios.get('/api/user/addresses'),
+      //   axios.get('/api/user/wishlist')
+      // ]);
+
       const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
   axios.get(`${baseUrl}/api/user/profile`),
   axios.get(`${baseUrl}/api/user/orders`),
