@@ -26,6 +26,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminProductForm from './pages/admin/AdminProductForm';
+import AdminOrders from './pages/admin/AdminOrders';
 
 // Guards
 import ProtectedRoute from './components/ProtectedRoute';
@@ -47,6 +48,7 @@ function App() {
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="products/new" element={<AdminProductForm />} />
                     <Route path="products/edit/:id" element={<AdminProductForm />} />
+                    <Route path="orders" element={<AdminOrders />} />
                   </Route>
                 </Route>
 
