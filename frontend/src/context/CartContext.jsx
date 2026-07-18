@@ -8,8 +8,10 @@ import {
   updateQuantityLocal,
   clearCartLocal,
   fetchCart,
-  clearCartAsync
-} from '../redux/slices/cartSlice';
+  clearCartAsync,
+  addToCartAsync,
+  removeFromCartAsync,
+} from "../redux/slices/cartSlice";
 import { AuthContext } from './AuthContext';
 
 
@@ -66,32 +68,29 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = useCallback((product, quantity = 1) => {
-    if (user) {
-      // Sync to backend for authenticated users
-      const updatedItems = cartItems.some(item => item.product._id === product._id)
-        ? cartItems.map(item =>
-            item.product._id === product._id
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
-          )
-        : [...cartItems, { id: `${product._id}-${Date.now()}`, product, quantity }];
-      
-      syncCartToBackend(updatedItems);
-    }
+const addToCart = useCallback((product, quantity = 1) => {
+  if (user) {
+    dispatch(
+      addToCartAsync({
+        productId: product._id,
+        quantity,
+      })
+    );
 
-    // Always dispatch to Redux (handles local and synced state)
-    dispatch(addToCartLocal({ product, quantity }));
-  }, [user, cartItems, dispatch]);
+    return;
+  }
 
-  const removeFromCart = useCallback((productId) => {
-    if (user) {
-      const updatedItems = cartItems.filter(item => item.product._id !== productId);
-      syncCartToBackend(updatedItems);
-    }
+  dispatch(addToCartLocal({ product, quantity }));
+}, [user, dispatch]);
 
-    dispatch(removeFromCartLocal(productId));
-  }, [user, cartItems, dispatch]);
+const removeFromCart = useCallback((productId) => {
+  if (user) {
+    dispatch(removeFromCartAsync(productId));
+    return;
+  }
+
+  dispatch(removeFromCartLocal(productId));
+}, [user, dispatch]);
 
   const updateQuantity = useCallback((productId, newQuantity) => {
     if (newQuantity <= 0) {

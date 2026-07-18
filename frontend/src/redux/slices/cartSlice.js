@@ -37,14 +37,20 @@ export const fetchCart = createAsyncThunk(
 
 // Async thunk to add item to cart
 export const addToCartAsync = createAsyncThunk(
-  'cart/addToCart',
+  "cart/addToCart",
   async ({ productId, quantity }, { rejectWithValue }) => {
     try {
-      await api.post('/api/cart/add', { productId, quantity });
-      return { productId, quantity };
+      const response = await api.post("/api/cart/add", {
+        productId,
+        quantity,
+      });
+
+      console.log("Updated Cart:", response.data);
+
+      return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'Failed to add to cart'
+        error.response?.data?.message || "Failed to add to cart"
       );
     }
   }
@@ -52,14 +58,17 @@ export const addToCartAsync = createAsyncThunk(
 
 // Async thunk to remove item from cart
 export const removeFromCartAsync = createAsyncThunk(
-  'cart/removeFromCart',
+  "cart/removeFromCart",
   async (productId, { rejectWithValue }) => {
     try {
-      await api.delete(`/api/cart/remove/${productId}`);
-      return productId;
+      const response = await api.delete(`/api/cart/remove/${productId}`);
+
+      console.log("Updated Cart:", response.data);
+
+      return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'Failed to remove from cart'
+        error.response?.data?.message || "Failed to remove from cart"
       );
     }
   }
@@ -237,6 +246,43 @@ const cartSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+      .addCase(addToCartAsync.fulfilled, (state, action) => {
+  state.items = action.payload.items.map(item => ({
+    id: `${item.productId._id}-${item.productId.name}`,
+    product: item.productId,
+    quantity: item.quantity,
+  }));
+
+  state.totalItems = state.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  state.totalPrice = state.items.reduce(
+    (sum, item) =>
+      sum + item.product.discountPrice * item.quantity,
+    0
+  );
+})
+
+.addCase(removeFromCartAsync.fulfilled, (state, action) => {
+  state.items = action.payload.items.map(item => ({
+    id: `${item.productId._id}-${item.productId.name}`,
+    product: item.productId,
+    quantity: item.quantity,
+  }));
+
+  state.totalItems = state.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  state.totalPrice = state.items.reduce(
+    (sum, item) =>
+      sum + item.product.discountPrice * item.quantity,
+    0
+  );
+})
 
       .addCase(clearCartAsync.fulfilled, state => {
         state.items = [];
