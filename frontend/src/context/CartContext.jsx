@@ -29,15 +29,17 @@ export const CartProvider = ({ children }) => {
   const totalPrice = useSelector(state => state.cart.totalPrice);
 
   // Load cart on mount
-  useEffect(() => {
-    if (user) {
-      // User is logged in - fetch their cart from backend
-      dispatch(fetchCart());
-    } else {
-      // User is logged out - load from localStorage
-      dispatch(loadCartFromLocalStorage());
-    }
-  }, [user, dispatch]);
+ useEffect(() => {
+  console.log("User changed:", user);
+
+  if (user) {
+    console.log("Fetching cart...");
+    dispatch(fetchCart());
+  } else {
+    console.log("Loading local cart...");
+    dispatch(loadCartFromLocalStorage());
+  }
+}, [user, dispatch]);
 
   const syncCartToBackend = async (updatedItems) => {
     if (!user) return;

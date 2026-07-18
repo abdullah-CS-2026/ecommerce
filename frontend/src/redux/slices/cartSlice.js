@@ -14,7 +14,11 @@ export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/cart');
+        console.log("Calling GET /api/cart");
+
+      const response = await api.get("/api/cart");
+
+      console.log("Cart API Response:", response.data);
 
       const items = response.data.cart.items.map(item => ({
         id: `${item.productId._id}-${item.productId.name}`,
@@ -206,12 +210,13 @@ const cartSlice = createSlice({
 
   extraReducers: builder => {
     builder
-      .addCase(fetchCart.pending, state => {
-        state.isLoading = true;
-        state.error = null;
-      })
+      .addCase(fetchCart.pending, (state) => {
+    state.isLoading = true;
+    state.error = null;
+})
 
       .addCase(fetchCart.fulfilled, (state, action) => {
+         console.log("Redux received:", action.payload);
         state.isLoading = false;
         state.items = action.payload;
 
@@ -219,6 +224,7 @@ const cartSlice = createSlice({
           (sum, item) => sum + item.quantity,
           0
         );
+        console.log("totalItems after fetch:", state.totalItems);
 
         state.totalPrice = state.items.reduce(
           (sum, item) =>

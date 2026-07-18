@@ -1,5 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { useDispatch } from "react-redux";
+
+import { clearCartLocal } from "../redux/slices/cartSlice";
+
+// later we'll also import wishlist clear action
 
 // Configure axios to send credentials (cookies) with all requests
 axios.defaults.withCredentials = true;
@@ -10,6 +15,7 @@ const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 export const AuthProvider = ({ children }) => {
+  const dispatch = useDispatch();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,14 +41,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       const userData = response.data;
-      
+
       // Token is in HTTP-only cookie, automatically sent by browser
       setUser(userData);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login failed'
       };
     }
   };
@@ -50,13 +56,13 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await axios.post(`${baseUrl}/api/auth/register`, { name, email, password });
-      
+
       // Do not log the user in immediately. They must verify via OTP first.
       return { success: true, email: response.data.email };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Registration failed'
       };
     }
   };
@@ -65,14 +71,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(`${baseUrl}/api/auth/verify-email`, { email, otp });
       const userData = response.data;
-      
+
       // Token is in HTTP-only cookie, automatically sent by browser
       setUser(userData);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Verification failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Verification failed'
       };
     }
   };
@@ -82,9 +88,9 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${baseUrl}/api/auth/resend-otp`, { email });
       return { success: true, message: response.data.message };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Resend failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Resend failed'
       };
     }
   };
@@ -96,10 +102,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear frontend state regardless
+
+      dispatch(clearCartLocal());
+
       setUser(null);
-      // Clear other stored data if needed
-      localStorage.removeItem('cart');
+
+      localStorage.removeItem("cart");
     }
   };
 

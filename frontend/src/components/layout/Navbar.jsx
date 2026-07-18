@@ -13,7 +13,11 @@ const Navbar = () => {
 
   // Get cart and wishlist counts from Redux
   const cartCount = useSelector(state => state.cart.totalItems);
-  const wishlistCount = useSelector(state => state.wishlist.totalItems);
+const cartItems = useSelector(state => state.cart.items);
+const wishlistCount = useSelector(state => state.wishlist.totalItems);
+
+console.log("Navbar cartCount:", cartCount);
+console.log("Navbar cartItems:", cartItems);
  
   const navLinks = [
     { name: 'Home', path: '/' },

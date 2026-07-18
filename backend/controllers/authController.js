@@ -179,12 +179,14 @@ exports.verifyEmail = async (req, res) => {
     // Generate JWT
     const token = generateToken(user._id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+ const isProduction = process.env.NODE_ENV === "production";
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+});
 
     return res.status(200).json({
       message: "Email verified successfully.",
@@ -259,14 +261,15 @@ exports.loginUser = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       const token = generateToken(user._id);
-      
-      // Set HTTP-only cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-      });
+
+      const isProduction = process.env.NODE_ENV === "production";
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+});
 
       // No OTP check — log in directly after verifying credentials
       res.json({
@@ -304,11 +307,13 @@ exports.getUserProfile = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
-    });
+   const isProduction = process.env.NODE_ENV === "production";
+
+res.clearCookie("token", {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
