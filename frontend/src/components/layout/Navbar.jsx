@@ -47,7 +47,7 @@ console.log("Navbar cartItems:", cartItems);
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-2xl font-bold text-slate-900 tracking-tight">
-            Electro<span className="text-primary">Mart</span>
+            Electro<span className="text-primary">Digital</span>
           </Link>
 
           {/* Desktop Navigation */}

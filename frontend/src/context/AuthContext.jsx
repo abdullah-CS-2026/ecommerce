@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useDispatch } from "react-redux";
 
 import { clearCartLocal } from "../redux/slices/cartSlice";
+import { clearWishlistLocal } from '../redux/slices/wishlistSlice';
 
 // later we'll also import wishlist clear action
 
@@ -95,21 +96,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
-    try {
-      // Call backend logout endpoint to clear the cookie
-      await axios.post(`${baseUrl}/api/auth/logout`);
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
+ const logout = async () => {
+  try {
+    await axios.post(`${baseUrl}/api/auth/logout`);
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    dispatch(clearCartLocal());
+    dispatch(clearWishlistLocal());
 
-      dispatch(clearCartLocal());
+    setUser(null);
 
-      setUser(null);
-
-      localStorage.removeItem("cart");
-    }
-  };
+    localStorage.removeItem("cart");
+  }
+};
 
   const getProfile = async () => {
     try {

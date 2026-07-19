@@ -7,15 +7,16 @@ const api = axios.create({
   withCredentials: true,
 });
 
+
+
 // Async thunk to fetch wishlist from backend
 export const fetchWishlist = createAsyncThunk(
   'wishlist/fetchWishlist',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/user/wishlist');
-      const items =
-        response.data.products?.map(item => item.productId._id) || [];
-      return items;
+     const response = await api.get('/api/user/wishlist');
+
+return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch wishlist'
@@ -29,8 +30,9 @@ export const addToWishlistAsync = createAsyncThunk(
   'wishlist/addToWishlist',
   async (productId, { rejectWithValue }) => {
     try {
-      await api.post('/api/user/wishlist', { productId });
-      return productId;
+      const response = await api.post('/api/user/wishlist', { productId });
+
+return response.data.wishlist;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to add to wishlist'
@@ -44,8 +46,8 @@ export const removeFromWishlistAsync = createAsyncThunk(
   'wishlist/removeFromWishlist',
   async (productId, { rejectWithValue }) => {
     try {
-      await api.delete(`/api/user/wishlist/${productId}`);
-      return productId;
+      const response = await api.delete(`/api/user/wishlist/${productId}`);
+       return response.data.wishlist;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to remove from wishlist'
@@ -53,6 +55,18 @@ export const removeFromWishlistAsync = createAsyncThunk(
     }
   }
 );
+
+// Two helpers to update the wishlist state based on backend response or local changes
+const updateWishlistState = (state, wishlist) => {
+    state.items = wishlist.products.map(
+        item => item.productId._id
+    );
+    state.totalItems = state.items.length;
+};
+
+const updateLocalWishlistState = (state) => {
+  state.totalItems = state.items.length;
+};
 
 const initialState = {
   items: [],
@@ -66,23 +80,23 @@ const wishlistSlice = createSlice({
   initialState,
   reducers: {
     addToWishlistLocal: (state, action) => {
-      const productId = action.payload;
+  const productId = action.payload;
 
-      if (!state.items.includes(productId)) {
-        state.items.push(productId);
-        state.totalItems = state.items.length;
-      }
-    },
+  if (!state.items.includes(productId)) {
+    state.items.push(productId);
+    updateLocalWishlistState(state);
+  }
+},
 
     removeFromWishlistLocal: (state, action) => {
-      const productId = action.payload;
-      state.items = state.items.filter(id => id !== productId);
-      state.totalItems = state.items.length;
-    },
+  const productId = action.payload;
+  state.items = state.items.filter(id => id !== productId);
+  updateLocalWishlistState(state);
+},
 
     clearWishlistLocal: state => {
       state.items = [];
-      state.totalItems = 0;
+      updateLocalWishlistState(state);
     },
   },
 
@@ -94,22 +108,17 @@ const wishlistSlice = createSlice({
       })
       .addCase(fetchWishlist.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.items = action.payload;
-        state.totalItems = state.items.length;
+        updateWishlistState(state, action.payload);
       })
       .addCase(fetchWishlist.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
       .addCase(addToWishlistAsync.fulfilled, (state, action) => {
-        if (!state.items.includes(action.payload)) {
-          state.items.push(action.payload);
-          state.totalItems = state.items.length;
-        }
+         updateWishlistState(state, action.payload);
       })
       .addCase(removeFromWishlistAsync.fulfilled, (state, action) => {
-        state.items = state.items.filter(id => id !== action.payload);
-        state.totalItems = state.items.length;
+        updateWishlistState(state, action.payload);
       });
   },
 });

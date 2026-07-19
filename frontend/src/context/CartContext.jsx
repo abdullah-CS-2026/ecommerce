@@ -8,17 +8,18 @@ import {
   updateQuantityLocal,
   clearCartLocal,
   fetchCart,
+   addToCartAsync,
+  updateQuantityAsync,
+   removeFromCartAsync,
   clearCartAsync,
-  addToCartAsync,
-  removeFromCartAsync,
+ 
+  
 } from "../redux/slices/cartSlice";
 import { AuthContext } from './AuthContext';
 
 
 
 export const CartContext = createContext();
-
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const CartProvider = ({ children }) => {
   const dispatch = useDispatch();
@@ -43,30 +44,6 @@ export const CartProvider = ({ children }) => {
   }
 }, [user, dispatch]);
 
-  const syncCartToBackend = async (updatedItems) => {
-    if (!user) return;
-    
-    try {
-      try {
-        await axios.delete(`${baseUrl}/api/cart/clear`);
-      } catch (error) {
-        console.warn('Failed to clear remote cart:', error.response?.status);
-      }
-
-      for (const item of updatedItems) {
-        try {
-          await axios.post(`${baseUrl}/api/cart/add`, {
-            productId: item.product._id,
-            quantity: item.quantity
-          });
-        } catch (error) {
-          console.error('Failed to add item to cart:', error.response?.status);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to sync cart to backend:', error);
-    }
-  };
 
 const addToCart = useCallback((product, quantity = 1) => {
   if (user) {
@@ -98,29 +75,33 @@ const removeFromCart = useCallback((productId) => {
       return;
     }
 
-    if (user) {
-      const updatedItems = cartItems.map(item =>
-        item.product._id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      );
-      syncCartToBackend(updatedItems);
-    }
+if (user) {
+  dispatch(
+    updateQuantityAsync({
+      productId,
+      quantity: newQuantity,
+    })
+  );
 
-    dispatch(updateQuantityLocal({ productId, quantity: newQuantity }));
+  return;
+}
+
+dispatch(
+  updateQuantityLocal({
+    productId,
+    quantity: newQuantity,
+  })
+);
   }, [user, cartItems, dispatch, removeFromCart]);
 
-  const clearCart = useCallback(async () => {
-    dispatch(clearCartLocal());
-    
-    if (user) {
-      try {
-        await dispatch(clearCartAsync());
-      } catch (error) {
-        console.error('Failed to clear cart from backend:', error);
-      }
-    }
-  }, [user, dispatch]);
+const clearCart = useCallback(async () => {
+  if (user) {
+    await dispatch(clearCartAsync());
+    return;
+  }
+
+  dispatch(clearCartLocal());
+}, [user, dispatch]);
 
   const getTotalPrice = () => totalPrice;
   const getTotalItems = () => totalItems;

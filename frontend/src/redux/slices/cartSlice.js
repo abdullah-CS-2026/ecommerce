@@ -20,13 +20,8 @@ export const fetchCart = createAsyncThunk(
 
       console.log("Cart API Response:", response.data);
 
-      const items = response.data.cart.items.map(item => ({
-        id: `${item.productId._id}-${item.productId.name}`,
-        product: item.productId,
-        quantity: item.quantity,
-      }));
+      return response.data.cart;
 
-      return items;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch cart'
@@ -74,6 +69,26 @@ export const removeFromCartAsync = createAsyncThunk(
   }
 );
 
+export const updateQuantityAsync = createAsyncThunk(
+  "cart/updateQuantity",
+  async ({ productId, quantity }, { rejectWithValue }) => {
+    try {
+      const response = await api.put("/api/cart/update", {
+        productId,
+        quantity,
+      });
+
+      console.log("Updated Cart:", response.data);
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update quantity"
+      );
+    }
+  }
+);
+
 // Async thunk to clear cart
 export const clearCartAsync = createAsyncThunk(
   'cart/clearCart',
@@ -88,6 +103,47 @@ export const clearCartAsync = createAsyncThunk(
     }
   }
 );
+
+
+// Why are you using cart.items at "cart.items.map((item)" instead of state.items ?
+
+// A strong answer would be:
+// "Because cart.items contains the latest data returned by the backend after the operation. The backend is the single source of truth, so we update the Redux state using the fresh backend response instead of relying on the existing Redux state."
+
+const updateCartState = (state, cart) => {
+  state.items = cart.items.map((item) => ({
+    id: `${item.productId._id}-${item.productId.name}`,
+    product: item.productId,
+    quantity: item.quantity,
+  }));
+
+  state.totalItems = state.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  state.totalPrice = state.items.reduce(
+    (sum, item) =>
+      sum + item.product.discountPrice * item.quantity,
+    0
+  );
+};
+
+const updateLocalCartState = (state) => {
+  state.totalItems = state.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  state.totalPrice = state.items.reduce(
+    (sum, item) =>
+      sum + item.product.discountPrice * item.quantity,
+    0
+  );
+
+  localStorage.setItem("cart", JSON.stringify(state.items));
+};
+
 
 const initialState = {
   items: [],
@@ -119,18 +175,7 @@ const cartSlice = createSlice({
         });
       }
 
-      state.totalItems = state.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      state.totalPrice = state.items.reduce(
-        (sum, item) =>
-          sum + item.product.discountPrice * item.quantity,
-        0
-      );
-
-      localStorage.setItem('cart', JSON.stringify(state.items));
+      updateLocalCartState(state);
     },
 
     removeFromCartLocal: (state, action) => {
@@ -140,18 +185,7 @@ const cartSlice = createSlice({
         item => item.product._id !== productId
       );
 
-      state.totalItems = state.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      state.totalPrice = state.items.reduce(
-        (sum, item) =>
-          sum + item.product.discountPrice * item.quantity,
-        0
-      );
-
-      localStorage.setItem('cart', JSON.stringify(state.items));
+     updateLocalCartState(state);
     },
 
     updateQuantityLocal: (state, action) => {
@@ -171,18 +205,7 @@ const cartSlice = createSlice({
         }
       }
 
-      state.totalItems = state.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      state.totalPrice = state.items.reduce(
-        (sum, item) =>
-          sum + item.product.discountPrice * item.quantity,
-        0
-      );
-
-      localStorage.setItem('cart', JSON.stringify(state.items));
+      updateLocalCartState(state);
     },
 
     clearCartLocal: state => {
@@ -224,71 +247,35 @@ const cartSlice = createSlice({
     state.error = null;
 })
 
-      .addCase(fetchCart.fulfilled, (state, action) => {
-         console.log("Redux received:", action.payload);
-        state.isLoading = false;
-        state.items = action.payload;
-
-        state.totalItems = state.items.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        console.log("totalItems after fetch:", state.totalItems);
-
-        state.totalPrice = state.items.reduce(
-          (sum, item) =>
-            sum + item.product.discountPrice * item.quantity,
-          0
-        );
-      })
+.addCase(fetchCart.fulfilled, (state, action) => {
+    state.isLoading = false;
+    updateCartState(state, action.payload);
+})
+      
 
       .addCase(fetchCart.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(addToCartAsync.fulfilled, (state, action) => {
-  state.items = action.payload.items.map(item => ({
-    id: `${item.productId._id}-${item.productId.name}`,
-    product: item.productId,
-    quantity: item.quantity,
-  }));
+    updateCartState(state, action.payload);
+})
 
-  state.totalItems = state.items.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
-
-  state.totalPrice = state.items.reduce(
-    (sum, item) =>
-      sum + item.product.discountPrice * item.quantity,
-    0
-  );
+.addCase(updateQuantityAsync.fulfilled, (state, action) => {
+    updateCartState(state, action.payload);
 })
 
 .addCase(removeFromCartAsync.fulfilled, (state, action) => {
-  state.items = action.payload.items.map(item => ({
-    id: `${item.productId._id}-${item.productId.name}`,
-    product: item.productId,
-    quantity: item.quantity,
-  }));
-
-  state.totalItems = state.items.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
-
-  state.totalPrice = state.items.reduce(
-    (sum, item) =>
-      sum + item.product.discountPrice * item.quantity,
-    0
-  );
+    updateCartState(state, action.payload);
 })
 
-      .addCase(clearCartAsync.fulfilled, state => {
+.addCase(clearCartAsync.fulfilled, state => {
         state.items = [];
         state.totalItems = 0;
         state.totalPrice = 0;
       });
+  
   },
 });
 
