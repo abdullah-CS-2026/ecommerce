@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye, ArrowRight, Heart, Truck, ShieldCheck, Headphones, Sparkles } from 'lucide-react';
@@ -6,10 +6,7 @@ import { WishlistContext } from '../context/WishlistContext';
 import CategorySection from '../components/Home.jsx/CategorySection';
 
 const Home = () => {
-
-
   const fetchProducts = async () => {
-    console.log(import.meta.env.VITE_BACKEND_URL);
     const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
 
     if (!res.ok) {
@@ -28,11 +25,9 @@ const Home = () => {
   });
 
   const featuredProducts =
-    data.filter(product => product.isFeatured).length > 0
-      ? data.filter(product => product.isFeatured).slice(0, 4)
+    data.filter((product) => product.isFeatured).length > 0
+      ? data.filter((product) => product.isFeatured).slice(0, 4)
       : data.slice(0, 4);
-
-
 
   const ProductCard = ({ product }) => {
     const { isInWishlist, addToWishlist, removeFromWishlist } = useContext(WishlistContext);
@@ -47,8 +42,6 @@ const Home = () => {
       }
     };
 
-    console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
-
     return (
       <div className="relative bg-white rounded-2xl border border-slate-200/70 overflow-hidden flex flex-col h-full transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-15px_rgba(15,23,42,0.25)] group">
         {/* Image */}
@@ -56,11 +49,12 @@ const Home = () => {
           <img
             src={product.mainImage}
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
 
           {/* Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-1.5">
+          <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex flex-col gap-1.5">
             {product.isNewArrival && (
               <span className="bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md">
                 New
@@ -76,14 +70,14 @@ const Home = () => {
           {/* Wishlist */}
           <button
             onClick={handleWishlist}
-            className="absolute top-4 right-4 bg-white/95 backdrop-blur text-slate-700 p-2.5 rounded-full hover:bg-rose-500 hover:text-white transition-all shadow-md hover:scale-110 z-10"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur text-slate-700 p-2 sm:p-2.5 rounded-full hover:bg-rose-500 hover:text-white transition-all shadow-md hover:scale-110 z-10"
             title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
           >
             <Heart size={16} fill={inWishlist ? 'currentColor' : 'none'} />
           </button>
 
-          {/* Quick actions */}
-          <div className="absolute inset-x-0 bottom-0 p-4 flex justify-center gap-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          {/* Quick actions - visible on hover for pointer devices, always visible on touch */}
+          <div className="absolute inset-x-0 bottom-0 p-4 flex justify-center gap-2 opacity-100 translate-y-0 sm:opacity-0 sm:translate-y-4 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300">
             <button className="bg-white/95 backdrop-blur text-slate-900 p-2.5 rounded-full hover:bg-blue-600 hover:text-white transition-colors shadow-lg">
               <ShoppingCart size={16} />
             </button>
@@ -97,7 +91,7 @@ const Home = () => {
         </div>
 
         {/* Body */}
-        <div className="p-5 flex flex-col flex-grow">
+        <div className="p-4 sm:p-5 flex flex-col flex-grow">
           <div className="text-[11px] text-slate-400 mb-1.5 tracking-[0.15em] uppercase font-medium">
             {product.category}
           </div>
@@ -123,7 +117,7 @@ const Home = () => {
 
           <div className="mt-auto flex justify-between items-end pt-3 border-t border-slate-100">
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-slate-900 leading-none">
+              <span className="text-base sm:text-lg font-bold text-slate-900 leading-none">
                 Rs. {product.discountPrice.toLocaleString()}
               </span>
               {product.originalPrice > product.discountPrice && (
@@ -132,7 +126,7 @@ const Home = () => {
                 </span>
               )}
             </div>
-            <button className="bg-slate-900 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-blue-600/30">
+            <button className="bg-slate-900 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-semibold uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-blue-600/30">
               Add To Cart
             </button>
           </div>
@@ -142,82 +136,73 @@ const Home = () => {
   };
 
   return (
-    
     <div className="min-h-screen bg-white">
-     {/* HERO */}
-<section  className="relative bg-slate-950 text-white overflow-hidden ">
-      <img
-  src="https://mir-s3-cdn-cf.behance.net/project_modules/1400_opt_1/600eed246111229.69bc4d67f2ab6.png"
-  alt="Hero Background"
-  className="w-full h-full object-contain bg-slate-950"
-/>
+      {/* HERO */}
+      <section className="relative bg-slate-950 text-white overflow-hidden min-h-[520px] sm:min-h-[580px] md:min-h-[640px] lg:min-h-[720px] flex items-center">
+        <img
+          src="https://mir-s3-cdn-cf.behance.net/project_modules/1400_opt_1/600eed246111229.69bc4d67f2ab6.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-950/20" />
 
-  {/* Optional Dark Overlay */}
-  <div className="absolute inset-0 bg-black/30"></div>
+        {/* Hero Content */}
+        <div className="relative z-10 w-full">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full mb-5 sm:mb-6">
+                <Sparkles size={14} className="text-blue-400" />
+                <span className="text-xs font-medium tracking-wider uppercase">New Arrivals 2026</span>
+              </div>
 
-  {/* Hero Content */}
-  <div className="absolute inset-0 z-10 flex items-center">
-    <div className="container mx-auto px-6 lg:px-12">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-5 sm:mb-6">
+                Next-Gen Tech
+                <br />
+                <span className="text-cyan-400">For Your Lifestyle</span>
+              </h1>
 
-      <div className="max-w-xl">
+              <p className="text-base sm:text-lg text-gray-200 mb-8 sm:mb-10 max-w-md">
+                Discover the latest in electronics — from state-of-the-art smartphones to immersive
+                home entertainment systems.
+              </p>
 
-        <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full mb-6">
-          <Sparkles size={14} className="text-blue-400" />
-          <span className="text-xs font-medium tracking-wider uppercase">
-            New Arrivals 2026
-          </span>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Link
+                  to="/products"
+                  className="text-center bg-white text-slate-900 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold hover:bg-gray-100 transition"
+                >
+                  Shop Now
+                </Link>
+
+                <Link
+                  to="/categories"
+                  className="text-center border border-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full hover:bg-white hover:text-slate-900 transition"
+                >
+                  Browse Categories
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
-          Next-Gen Tech
-          <br />
-          <span className="text-cyan-400">
-            For Your Lifestyle
-          </span>
-        </h1>
-
-        <p className="text-lg text-gray-200 mb-10">
-          Discover the latest in electronics — from state-of-the-art
-          smartphones to immersive home entertainment systems.
-        </p>
-
-        <div className="flex gap-4">
-          <Link
-            to="/products"
-            className="bg-white text-slate-900 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition"
-          >
-            Shop Now
-          </Link>
-
-          <Link
-            to="/categories"
-            className="border border-white px-8 py-4 rounded-full hover:bg-white hover:text-slate-900 transition"
-          >
-            Browse Categories
-          </Link>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-</section>
-
-<CategorySection/>
+      <CategorySection />
 
       {/* FEATURED PRODUCTS */}
-      <section className="py-24 bg-gradient-to-b from-slate-50 to-white">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-12 gap-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-10 sm:mb-12 gap-4">
             <div>
               <div className="text-xs font-bold tracking-[0.2em] text-blue-600 uppercase mb-3">
                 — Curated Selection
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
                 Featured Products
               </h2>
-              <p className="text-slate-500 mt-3 text-lg">Handpicked essentials, made for you.</p>
+              <p className="text-slate-500 mt-3 text-base sm:text-lg">
+                Handpicked essentials, made for you.
+              </p>
             </div>
             <Link
               to="/products"
@@ -228,13 +213,10 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {loading ? (
               [...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl h-[440px] border border-slate-100 overflow-hidden"
-                >
+                <div key={i} className="bg-white rounded-2xl h-[320px] sm:h-[440px] border border-slate-100 overflow-hidden">
                   <div className="aspect-square bg-slate-100 animate-pulse" />
                   <div className="p-5 space-y-3">
                     <div className="h-3 bg-slate-100 rounded animate-pulse w-1/3" />
@@ -244,9 +226,7 @@ const Home = () => {
                 </div>
               ))
             ) : featuredProducts.length > 0 ? (
-              featuredProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))
+              featuredProducts.map((product) => <ProductCard key={product._id} product={product} />)
             ) : (
               <p className="col-span-full text-center text-slate-400 font-medium py-20">
                 No featured products found.
@@ -254,7 +234,7 @@ const Home = () => {
             )}
           </div>
 
-          <div className="mt-12 sm:hidden text-center">
+          <div className="mt-10 sm:mt-12 sm:hidden text-center">
             <Link
               to="/products"
               className="inline-flex items-center gap-2 bg-slate-900 text-white font-semibold px-6 py-3 rounded-full"
@@ -266,19 +246,19 @@ const Home = () => {
       </section>
 
       {/* WHY SHOP */}
-      <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-slate-950 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.15),transparent_60%)]" />
         <div className="container mx-auto px-4 relative">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
             <div className="text-xs font-bold tracking-[0.2em] text-blue-400 uppercase mb-3">
               — Why Choose Us
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
               Built on trust, delivered with care
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
             {[
               { icon: Truck, title: 'Free Shipping', desc: 'Complimentary delivery on all orders over $50, anywhere in the country.' },
               { icon: Headphones, title: 'Premium Support', desc: '24/7 dedicated customer service from real humans who care.' },
@@ -286,12 +266,12 @@ const Home = () => {
             ].map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="group relative p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-blue-500/30 transition-all"
+                className="group relative p-6 sm:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-blue-500/30 transition-all"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
-                  <Icon size={24} className="text-white" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center mb-5 sm:mb-6 shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
+                  <Icon size={22} className="text-white" />
                 </div>
-                <h3 className="font-semibold text-xl mb-2">{title}</h3>
+                <h3 className="font-semibold text-lg sm:text-xl mb-2">{title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}

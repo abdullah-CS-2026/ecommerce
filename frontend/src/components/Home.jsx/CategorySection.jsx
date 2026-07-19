@@ -29,53 +29,45 @@ const categories = [
 
 const CategorySection = () => {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6">
-
+    <section className="py-16 sm:py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Heading */}
-        <div className="text-center mb-14">
-          <h2 className="text-4xl font-bold text-gray-900">
-            Why Shop With Us
-          </h2>
-
-          <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
-            Discover premium smartphones with guaranteed quality, competitive
-            prices, and trusted service.
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Why Shop With Us</h2>
+          <p className="text-gray-500 mt-3 max-w-2xl mx-auto text-sm sm:text-base">
+            Discover premium smartphones with guaranteed quality, competitive prices, and trusted
+            service.
           </p>
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              className="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
             >
               {/* Image */}
-              <div className="overflow-hidden">
+              <div className="overflow-hidden h-48 sm:h-56 md:h-64">
                 <img
                   src={category.image}
                   alt={category.title}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
 
               {/* Content */}
-              <div className="p-6">
-
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+              <div className="p-5 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
                   {category.title}
                 </h3>
-
-                <p className="text-gray-600 text-sm leading-7">
+                <p className="text-gray-600 text-sm leading-6 sm:leading-7">
                   {category.description}
                 </p>
-
               </div>
             </div>
           ))}
-
         </div>
       </div>
     </section>

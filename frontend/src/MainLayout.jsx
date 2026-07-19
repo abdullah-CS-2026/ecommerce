@@ -7,7 +7,12 @@ export const MainLayout = () => {
         <div className="flex flex-col min-h-screen bg-slate-50">
             <Navbar />
 
-            <main className="flex-grow pt-24 pb-10">
+            {/*
+              The navbar is fixed, so main needs top padding that matches
+              its real rendered height (delivery banner + nav row) at each
+              breakpoint, or content gets clipped underneath it.
+            */}
+            <main className="flex-grow pt-[96px] md:pt-[112px] pb-10">
                 <Outlet />
             </main>
 
@@ -15,4 +20,3 @@ export const MainLayout = () => {
         </div>
     );
 };
-
