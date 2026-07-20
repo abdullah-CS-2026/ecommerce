@@ -1,8 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch } from "react-redux";
-import { removeFromWishlistAsync } from "../redux/slices/wishlistSlice"
-
+import { useSelector } from "react-redux";
 
 import axios from 'axios';
 
@@ -22,9 +20,7 @@ import { AddressCard } from '../components/profile/AddressesTab/AddressCard';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
-
 const Profile = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
@@ -40,7 +36,6 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
-  const [wishlist, setWishlist] = useState(null);
 
   // Edit profile
   const [editingProfile, setEditingProfile] = useState(false);
@@ -69,23 +64,14 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      // const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
-      //   axios.get('/api/user/profile'),
-      //   axios.get('/api/user/orders'),
-      //   axios.get('/api/user/addresses'),
-      //   axios.get('/api/user/wishlist')
-      // ]);
-
-      const [profileRes, ordersRes, addressesRes, wishlistRes] = await Promise.all([
-  axios.get(`${baseUrl}/api/user/profile`),
-  axios.get(`${baseUrl}/api/user/orders`),
-  axios.get(`${baseUrl}/api/user/addresses`),
-  axios.get(`${baseUrl}/api/user/wishlist`)
-]);
+      const [profileRes, ordersRes, addressesRes] = await Promise.all([
+        axios.get(`${baseUrl}/api/user/profile`),
+        axios.get(`${baseUrl}/api/user/orders`),
+        axios.get(`${baseUrl}/api/user/addresses`),
+      ]);
       setProfileData(profileRes.data);
       setOrders(ordersRes.data);
       setAddresses(addressesRes.data);
-      setWishlist(wishlistRes.data);
 
       setProfileForm({
         name: profileRes.data.name,
@@ -180,10 +166,10 @@ const Profile = () => {
 
   if (loading && !profileData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading profile...</p>
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-sm sm:text-base text-slate-600">Loading profile...</p>
         </div>
       </div>
     );
@@ -191,9 +177,19 @@ const Profile = () => {
 
   if (!profileData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Error loading profile. Please try again.</p>
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <X className="w-7 h-7 text-red-500" />
+          </div>
+          <p className="text-red-600 font-medium">Couldn't load your profile.</p>
+          <p className="text-slate-500 text-sm mt-1">Please check your connection and try again.</p>
+          <button
+            onClick={fetchProfileData}
+            className="mt-5 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -201,7 +197,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 lg:py-12">
         <ProfileHeader
           profileData={profileData}
           formatDate={formatDate}
@@ -209,13 +205,15 @@ const Profile = () => {
         />
 
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <ProfileTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mt-6 sm:mt-8">
+          <div className="overflow-x-auto">
+            <ProfileTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+          </div>
 
-          <div className="p-8">
+          <div key={activeTab} className="p-4 sm:p-6 md:p-8 animate-in fade-in duration-300">
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <ProfileTab
@@ -244,10 +242,23 @@ const Profile = () => {
             {/* Addresses Tab */}
             {activeTab === 'addresses' && (
               <div>
-
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">Saved Addresses</h3>
+                    <p className="text-sm text-slate-500 mt-0.5">Manage where your orders get delivered.</p>
+                  </div>
+                  {!showAddressForm && (
+                    <button
+                      onClick={() => setShowAddressForm(true)}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-blue-700 transition-colors shrink-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add New Address
+                    </button>
+                  )}
+                </div>
 
                 {showAddressForm && (
-
                   <AddressForm
                     addressForm={addressForm}
                     setAddressForm={setAddressForm}
@@ -255,11 +266,16 @@ const Profile = () => {
                     handleAddAddress={handleAddAddress}
                     setShowAddressForm={setShowAddressForm}
                   />
-
                 )}
 
                 {addresses.length === 0 ? (
-                  <p className="text-slate-600 text-center py-8">No addresses saved yet. Add one to get started!</p>
+                  <div className="text-center py-12 sm:py-16">
+                    <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                      <MapPin className="w-7 h-7 text-slate-400" />
+                    </div>
+                    <p className="text-slate-600 font-medium">No addresses saved yet</p>
+                    <p className="text-slate-400 text-sm mt-1">Add one to speed up checkout next time.</p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {addresses.map((address) => (
@@ -282,13 +298,9 @@ const Profile = () => {
               />
             )}
 
-
-
             {/* Wishlist Tab */}
             {activeTab === "wishlist" && (
               <WishlistTab
-                wishlist={wishlist}
-                dispatch={dispatch}
                 formatDate={formatDate}
               />
             )}
