@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, ChevronDown, Star, ShoppingCart, Percent, Heart } from 'lucide-react';
 import { WishlistContext } from '../context/WishlistContext';
+import ProductSkeleton from '../components/skeletons/ProductSkeleton';
 
 const ProductList = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -176,8 +177,8 @@ const ProductList = () => {
         <div className="flex-1">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-3xl h-[400px] animate-pulse-slow shadow-sm border border-slate-50"></div>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <ProductSkeleton key={index} />
               ))}
             </div>
           ) : products.length === 0 ? (

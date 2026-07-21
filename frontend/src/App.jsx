@@ -11,8 +11,6 @@ import Cart from './pages/Cart';
 import Checkout from './pages/checkout/Checkout';
 import Profile from './pages/Profile';
 
-// Additional Pages
-import { AboutUs, ContactUs, Categories, PrivacyPolicy, Terms } from './pages/AdditionalPages';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -29,9 +27,14 @@ import AdminProductForm from './pages/admin/AdminProductForm';
 import AdminOrders from './pages/admin/AdminOrders';
 
 // Guards
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import { MainLayout } from './MainLayout';
+import { AboutUs } from './pages/AdditionalPages/AboutUs';
+import { ContactUs } from './pages/AdditionalPages/ContactUs';
+import { Terms } from './pages/AdditionalPages/Terms';
+import { PrivacyPolicy } from './pages/AdditionalPages/PrivacyPolicy';
+import { Categories } from './pages/AdditionalPages/Categories';
 
 function App() {
   return (
@@ -55,7 +58,12 @@ function App() {
                 {/* User Routes - With Navbar/Footer layout */}
                 <Route element={<MainLayout />}>
 
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<Home/>} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/about-us" element={<AboutUs/>} />
+                  <Route path="/contact-us" element={<ContactUs/>} />
+                  <Route path="/terms-and-conditions" element={<Terms />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
                   <Route path="/products" element={<ProductList />} />
 
@@ -64,16 +72,6 @@ function App() {
                   <Route path="/cart" element={<Cart />} />
 
                   <Route path="/checkout" element={<Checkout />} />
-
-                  <Route path="/categories" element={<Categories />} />
-
-                  <Route path="/about" element={<AboutUs />} />
-
-                  <Route path="/contact" element={<ContactUs />} />
-
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-
-                  <Route path="/terms" element={<Terms />} />
 
                   <Route path="/login" element={<Login />} />
 

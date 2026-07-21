@@ -407,37 +407,37 @@ const AdminProductForm = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-32">
-      <div className="flex items-center justify-between mb-10">
+    <div className="max-w-6xl mx-auto pb-40 sm:pb-32 px-4 sm:px-0">
+      <div className="flex items-center justify-between mb-6 sm:mb-10">
         <div>
           <Link to="/admin/products" className="flex items-center text-slate-500 hover:text-primary transition-colors group mb-2">
             <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
             <span className="font-semibold text-sm">Return to Inventory</span>
           </Link>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             {isEditMode ? 'Edit Professional Product' : 'Create New Professional Product'}
           </h2>
         </div>
       </div>
 
       {message.text && (
-        <div className={`mb-10 p-5 rounded-2xl flex items-center space-x-4 border-l-8 animate-slide-up ${
+        <div className={`mb-6 sm:mb-10 p-4 sm:p-5 rounded-2xl flex items-start sm:items-center space-x-3 sm:space-x-4 border-l-8 animate-slide-up ${
           message.type === 'success' ? 'bg-green-50 text-green-700 border-green-500' : 'bg-red-50 text-red-700 border-red-500'
         }`}>
-          {message.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-          <p className="font-bold">{message.text}</p>
+          {message.type === 'success' ? <CheckCircle2 size={24} className="shrink-0" /> : <AlertCircle size={24} className="shrink-0" />}
+          <p className="font-bold text-sm sm:text-base">{message.text}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Left Column: Core Info & Media */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           
           {/* Section 1: Basic Information */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col space-y-6">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 flex flex-col space-y-6">
             <div className="flex items-center space-x-3 text-primary mb-2">
               <div className="p-2 bg-primary/10 rounded-lg"><Type size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Basic Details</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Basic Details</h3>
             </div>
 
             <div className="space-y-4">
@@ -449,11 +449,11 @@ const AdminProductForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g. iPhone 15 Pro Max 256GB"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-lg font-medium"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base sm:text-lg font-medium"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Brand</label>
                   <input
@@ -494,10 +494,10 @@ const AdminProductForm = () => {
           </div>
 
           {/* Section 2: Pricing */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-green-600 mb-6">
               <div className="p-2 bg-green-50 rounded-lg"><DollarSign size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Pricing & Inventory</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Pricing & Inventory</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -571,16 +571,16 @@ const AdminProductForm = () => {
           </div>
 
           {/* Section 3: Media */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-indigo-600 mb-6">
               <div className="p-2 bg-indigo-50 rounded-lg"><ImageIcon size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Product Media</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Product Media</h3>
             </div>
 
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Main Image (Thumbnail) <span className="text-red-500">*</span></label>
-                <div className="flex space-x-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden flex-shrink-0 bg-slate-50">
                     {formData.mainImage ? (
                       <img src={formData.mainImage} className="w-full h-full object-cover" alt="Thumb" onError={(e) => e.target.src = 'https://via.placeholder.com/100'} />
@@ -594,7 +594,7 @@ const AdminProductForm = () => {
                     value={formData.mainImage}
                     onChange={handleChange}
                     placeholder="Paste main image URL here..."
-                    className="flex-grow px-5 py-3 h-12 my-auto bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                    className="flex-grow px-5 py-3 sm:h-12 sm:my-auto bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
                   />
                 </div>
               </div>
@@ -641,10 +641,10 @@ const AdminProductForm = () => {
           
           {/* Mobile Specifications - shown only for Mobiles category */}
           {formData.category === 'Mobiles' && (
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 space-y-6">
               <div className="flex items-center space-x-3 text-sky-600 mb-2">
                 <div className="p-2 bg-sky-50 rounded-lg"><Tag size={20} /></div>
-                <h3 className="text-xl font-bold text-slate-900">Mobile Specifications</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900">Mobile Specifications</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -652,7 +652,7 @@ const AdminProductForm = () => {
                 <div className="bg-slate-50 p-4 rounded-2xl">
                   <div className="flex items-center mb-3"><span className="font-bold mr-2">📱</span><h4 className="font-semibold">Basic Information</h4></div>
                   <InputField label="Brand" name="basic.brand" value={formData.mobileSpecs.basic.brand} onChange={(e) => handleMobileSpecChange('basic', 'brand', e.target.value)} />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                     <InputField label="Model Name" value={formData.mobileSpecs.basic.modelName} onChange={(e) => handleMobileSpecChange('basic', 'modelName', e.target.value)} />
                     <InputField label="Release Date" type="date" value={formData.mobileSpecs.basic.releaseDate} onChange={(e) => handleMobileSpecChange('basic', 'releaseDate', e.target.value)} />
                   </div>
@@ -662,7 +662,7 @@ const AdminProductForm = () => {
                 {/* Performance */}
                 <div className="bg-slate-50 p-4 rounded-2xl">
                   <div className="flex items-center mb-3"><span className="font-bold mr-2">⚙️</span><h4 className="font-semibold">Performance</h4></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <InputField label="Processor Brand" value={formData.mobileSpecs.performance.processorBrand} onChange={(e) => handleMobileSpecChange('performance', 'processorBrand', e.target.value)} />
                     <InputField label="CPU Model" value={formData.mobileSpecs.performance.cpuModel} onChange={(e) => handleMobileSpecChange('performance', 'cpuModel', e.target.value)} />
                     <InputField label="GPU" value={formData.mobileSpecs.performance.gpu} onChange={(e) => handleMobileSpecChange('performance', 'gpu', e.target.value)} />
@@ -670,7 +670,7 @@ const AdminProductForm = () => {
                     <InputField label="RAM" value={formData.mobileSpecs.performance.ram} onChange={(e) => handleMobileSpecChange('performance', 'ram', e.target.value)} />
                     <InputField label="RAM Type" value={formData.mobileSpecs.performance.ramType} onChange={(e) => handleMobileSpecChange('performance', 'ramType', e.target.value)} />
                     <InputField label="Storage" value={formData.mobileSpecs.performance.storage} onChange={(e) => handleMobileSpecChange('performance', 'storage', e.target.value)} />
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <label className="flex items-center"><input type="checkbox" checked={formData.mobileSpecs.performance.expandableStorage} onChange={(e) => handleMobileSpecChange('performance', 'expandableStorage', e.target.checked)} className="mr-2" />Expandable</label>
                       <InputField label="Max Expandable" value={formData.mobileSpecs.performance.maxExpandable} onChange={(e) => handleMobileSpecChange('performance', 'maxExpandable', e.target.value)} />
                     </div>
@@ -685,7 +685,7 @@ const AdminProductForm = () => {
                   <div className="flex items-center mb-3"><span className="font-bold mr-2">📺</span><h4 className="font-semibold">Display</h4></div>
                   <InputField label="Screen Size" value={formData.mobileSpecs.display.screenSize} onChange={(e) => handleMobileSpecChange('display', 'screenSize', e.target.value)} />
                   <InputField label="Display Type" value={formData.mobileSpecs.display.displayType} onChange={(e) => handleMobileSpecChange('display', 'displayType', e.target.value)} />
-                  <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                     <InputField label="Resolution" value={formData.mobileSpecs.display.resolution} onChange={(e) => handleMobileSpecChange('display', 'resolution', e.target.value)} />
                     <InputField label="Refresh Rate" value={formData.mobileSpecs.display.refreshRate} onChange={(e) => handleMobileSpecChange('display', 'refreshRate', e.target.value)} />
                   </div>
@@ -745,7 +745,7 @@ const AdminProductForm = () => {
 
               <div className="bg-slate-50 p-4 rounded-2xl">
                 <div className="flex items-center mb-3"><span className="font-bold mr-2">💰</span><h4 className="font-semibold">Commercial Info</h4></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InputField label="SKU" value={formData.mobileSpecs.commercial.sku} onChange={(e) => handleMobileSpecChange('commercial', 'sku', e.target.value)} />
                   <InputField label="Warranty" value={formData.mobileSpecs.commercial.warranty} onChange={(e) => handleMobileSpecChange('commercial', 'warranty', e.target.value)} />
                   <InputField label="Origin" value={formData.mobileSpecs.commercial.origin} onChange={(e) => handleMobileSpecChange('commercial', 'origin', e.target.value)} />
@@ -757,13 +757,13 @@ const AdminProductForm = () => {
         </div>
 
         {/* Right Column: Specifications, Shipping & Status */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           
           {/* Status & Options */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-amber-500 mb-6">
               <div className="p-2 bg-amber-50 rounded-lg"><Zap size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Visibility & Status</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Visibility & Status</h3>
             </div>
 
             <div className="space-y-4">
@@ -796,10 +796,10 @@ const AdminProductForm = () => {
           </div>
 
           {/* Logistics */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-blue-500 mb-6">
               <div className="p-2 bg-blue-50 rounded-lg"><Truck size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Shipping Details</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Shipping Details</h3>
             </div>
 
             <div className="space-y-4">
@@ -827,10 +827,10 @@ const AdminProductForm = () => {
           </div>
 
           {/* Variants */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-purple-600 mb-6">
               <div className="p-2 bg-purple-50 rounded-lg"><Maximize2 size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Variants</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Variants</h3>
             </div>
 
             <div className="space-y-4">
@@ -862,10 +862,10 @@ const AdminProductForm = () => {
           </div>
 
           {/* Specifications */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
             <div className="flex items-center space-x-3 text-slate-600 mb-6">
               <div className="p-2 bg-slate-50 rounded-lg"><List size={20} /></div>
-              <h3 className="text-xl font-bold text-slate-900">Specifications</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">Specifications</h3>
             </div>
 
             <div>
@@ -883,21 +883,21 @@ const AdminProductForm = () => {
         </div>
       </form>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-10 right-10 z-50 flex items-center flex-row-reverse">
+      {/* Floating Action Button - full-width bar on mobile, floating pill on larger screens */}
+      <div className="fixed bottom-0 inset-x-0 sm:bottom-10 sm:inset-x-auto sm:right-10 z-50 flex items-center flex-col-reverse sm:flex-row-reverse p-4 sm:p-0 bg-white/90 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t border-slate-100 sm:border-0 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] sm:shadow-none">
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={`flex items-center space-x-4 px-10 py-5 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all font-black text-lg group ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`flex items-center justify-center space-x-3 sm:space-x-4 w-full sm:w-auto px-6 sm:px-10 py-4 sm:py-5 bg-primary text-white rounded-2xl sm:rounded-full shadow-2xl shadow-primary/40 hover:bg-blue-700 sm:hover:scale-105 active:scale-95 transition-all font-black text-base sm:text-lg group ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {loading ? (
-            <Loader2 className="animate-spin" size={24} />
+            <Loader2 className="animate-spin" size={22} />
           ) : (
-            <Save size={24} className="group-hover:rotate-12 transition-transform" />
+            <Save size={22} className="group-hover:rotate-12 transition-transform" />
           )}
           <span>{isEditMode ? 'Save Global Update' : 'Publish Product'}</span>
         </button>
-        <div className="mr-6 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-slate-200 shadow-xl hidden md:flex items-center space-x-2">
+        <div className="mr-0 sm:mr-6 mb-2 sm:mb-0 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-slate-200 shadow-xl hidden md:flex items-center space-x-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
           <span className="text-xs font-black text-slate-600 uppercase tracking-widest">Global Sync Active</span>
         </div>

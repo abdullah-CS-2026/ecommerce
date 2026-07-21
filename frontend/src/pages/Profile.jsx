@@ -17,6 +17,7 @@ import { OrdersTab } from '../components/profile/tabs/OrdersTab';
 import { WishlistTab } from '../components/profile/tabs/WishlistTab';
 import { AddressForm } from '../components/profile/AddressesTab/AddressForm';
 import { AddressCard } from '../components/profile/AddressesTab/AddressCard';
+import ProfileSkeleton from '../components/skeletons/ProfileSkeleton';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -164,16 +165,9 @@ const Profile = () => {
 
   const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  if (loading && !profileData) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-sm sm:text-base text-slate-600">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
+if (loading && !profileData) {
+    return <ProfileSkeleton />;
+}
 
   if (!profileData) {
     return (
