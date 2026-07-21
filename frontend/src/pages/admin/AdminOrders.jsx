@@ -52,12 +52,9 @@ const AdminOrders = () => {
       </div>
 
       <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="p-12 sm:p-32 flex flex-col items-center justify-center space-y-4 sm:space-y-6">
-            <Loader2 className="animate-spin text-primary" size={48} />
-            <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Loading Orders...</p>
-          </div>
-        ) : error ? (
+      {loading ? (
+    <AdminOrdersSkeleton />
+): error ? (
           <div className="p-12 sm:p-32 flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500">
               <AlertCircle size={36} />

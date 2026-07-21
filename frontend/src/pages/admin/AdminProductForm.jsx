@@ -20,6 +20,7 @@ import {
   Palette,
   Maximize2
 } from 'lucide-react';
+import AdminFormSkeleton from '../../components/skeletons/AdminFormSkeleton';
 
 const categories = [
   'Mobiles', 'Laptops', 'TV', 'Audio', 'Wearables', 'Accessories', 'Tablets', 'Monitors', 'Gaming'
@@ -399,10 +400,7 @@ const AdminProductForm = () => {
 
   if (fetching) {
     return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <Loader2 className="animate-spin text-primary mb-4" size={40} />
-        <p className="text-slate-500 font-medium">Loading professional product data...</p>
-      </div>
+      <AdminFormSkeleton/>
     );
   }
 

@@ -14,6 +14,7 @@ import {
   Star,
   Package
 } from 'lucide-react';
+import AdminProductsSkeleton from '../../components/skeletons/AdminProductsSkeleton';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -95,14 +96,10 @@ const AdminProducts = () => {
         </div>
 
         {loading ? (
-          <div className="p-12 sm:p-32 flex flex-col items-center justify-center space-y-4 sm:space-y-6">
-            <div className="relative">
-              <Loader2 className="animate-spin text-primary" size={48} />
-              <Package className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/40" size={20} />
-            </div>
-            <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Synchronizing Database...</p>
-          </div>
-        ) : error ? (
+          
+    <AdminProductsSkeleton />
+)
+         : error ? (
           <div className="p-12 sm:p-32 flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 shadow-inner">
               <AlertCircle size={36} />
