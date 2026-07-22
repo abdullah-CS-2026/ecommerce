@@ -35,10 +35,12 @@ import { ContactUs } from './pages/AdditionalPages/ContactUs';
 import { Terms } from './pages/AdditionalPages/Terms';
 import { PrivacyPolicy } from './pages/AdditionalPages/PrivacyPolicy';
 import { Categories } from './pages/AdditionalPages/Categories';
+import ErrorBoundary from './components/ErrorBounday/ErrorBoundary';
 
 function App() {
   return (
     <AuthProvider>
+      <ErrorBoundary>
       <CartProvider>
         <WishlistProvider>
           <CheckoutProvider>
@@ -94,6 +96,7 @@ function App() {
           </CheckoutProvider>
         </WishlistProvider>
       </CartProvider>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }

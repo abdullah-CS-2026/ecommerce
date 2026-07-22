@@ -4,33 +4,65 @@ const uploadToCloudinary = require("../utils/cloudinaryUpload");
 
 exports.getProducts = async (req, res) => {
   try {
-    const { category, brand, isFeatured, isNewArrival, search, sort } = req.query;
+    const {
+      category,
+      brand,
+      isFeatured,
+      isNewArrival,
+      search,
+      sort,
+      page = 1,
+      limit = 5,
+    } = req.query;
+
     let query = {};
 
-    if (category && category !== 'All') query.category = category;
+    if (category && category !== "All") query.category = category;
     if (brand) query.brand = brand;
-    if (isFeatured) query.isFeatured = isFeatured === 'true';
-    if (isNewArrival) query.isNewArrival = isNewArrival === 'true';
+    if (isFeatured) query.isFeatured = isFeatured === "true";
+    if (isNewArrival) query.isNewArrival = isNewArrival === "true";
+
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ];
     }
 
-    let productsQuery = Product.find(query);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const totalProducts = await Product.countDocuments(query);
+
+    let productsQuery = Product.find(query)
+      .skip(skip)
+      .limit(limitNumber);
 
     // Sorting
-    if (sort === 'priceLowToHigh') productsQuery = productsQuery.sort({ discountPrice: 1 });
-    else if (sort === 'priceHighToLow') productsQuery = productsQuery.sort({ discountPrice: -1 });
-    else if (sort === 'popularity') productsQuery = productsQuery.sort({ numReviews: -1 });
-    else productsQuery = productsQuery.sort({ createdAt: -1 });
+    if (sort === "priceLowToHigh")
+      productsQuery = productsQuery.sort({ discountPrice: 1 });
+    else if (sort === "priceHighToLow")
+      productsQuery = productsQuery.sort({ discountPrice: -1 });
+    else if (sort === "popularity")
+      productsQuery = productsQuery.sort({ numReviews: -1 });
+    else
+      productsQuery = productsQuery.sort({ createdAt: -1 });
 
     const products = await productsQuery.lean();
-    res.json(products);
+
+    res.json({
+      products,
+      page: pageNumber,
+      totalPages: Math.ceil(totalProducts / limitNumber),
+      totalProducts,
+    });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching products",
+    });
   }
 };
 
