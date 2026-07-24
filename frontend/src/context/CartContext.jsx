@@ -33,13 +33,10 @@ export const CartProvider = ({ children }) => {
 
   // Load cart on mount
  useEffect(() => {
-  console.log("User changed:", user);
 
   if (user) {
-    console.log("Fetching cart...");
     dispatch(fetchCart());
   } else {
-    console.log("Loading local cart...");
     dispatch(loadCartFromLocalStorage());
   }
 }, [user, dispatch]);

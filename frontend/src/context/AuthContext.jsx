@@ -28,7 +28,6 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
       } catch (error) {
         // No valid cookie or token, user is not authenticated
-        console.log('User not authenticated on app load');
         setUser(null);
       } finally {
         setLoading(false);
