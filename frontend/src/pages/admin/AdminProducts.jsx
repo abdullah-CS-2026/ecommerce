@@ -33,7 +33,7 @@ const AdminProducts = () => {
     try {
 
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products?page=${page}`);
+      const res = await axios.get( `${import.meta.env.VITE_BACKEND_URL}/api/admin/products?page=${page}`);
       console.log(res.data);
      setProducts(res.data.products);
 setTotalPages(res.data.totalPages);

@@ -3,31 +3,42 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye, ArrowRight, Heart, Truck, ShieldCheck, Headphones, Sparkles } from 'lucide-react';
 import { WishlistContext } from '../context/WishlistContext';
-import CategorySection from '../components/Home.jsx/CategorySection';
+import CategorySection from '../components/Home/CategorySection';
 
 const Home = () => {
-  const fetchProducts = async () => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
+const fetchProducts = async () => {
+  const res = await fetch(
+    `${import.meta.env.VITE_BACKEND_URL}/api/products`
+  );
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch products');
-    }
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
+  }
 
-    return res.json();
-  };
+  const data = await res.json();
 
-  const {
-    data = [],
-    isLoading: loading,
-  } = useQuery({
-    queryKey: ['products'],
-    queryFn: fetchProducts,
-  });
+  console.log("Products API:", data);
 
-  const featuredProducts =
-    data.filter((product) => product.isFeatured).length > 0
-      ? data.filter((product) => product.isFeatured).slice(0, 4)
-      : data.slice(0, 4);
+  return data;
+};
+
+const {
+  data,
+  isLoading: loading,
+} = useQuery({
+  queryKey: ["products"],
+  queryFn: fetchProducts,
+});
+
+const products = data || [];
+
+const featuredProducts =
+  products.filter(product => product.isFeatured).length > 0
+    ? products.filter(product => product.isFeatured).slice(0, 4)
+    : products.slice(0, 4);
+
+     console.log("React Query data:", data);
+console.log("Products:", products);
 
   const ProductCard = ({ product }) => {
     const { isInWishlist, addToWishlist, removeFromWishlist } = useContext(WishlistContext);

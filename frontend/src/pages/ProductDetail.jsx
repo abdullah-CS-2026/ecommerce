@@ -20,10 +20,21 @@ import {
 import ProductDetailSkeleton from '../components/skeletons/ProductDetailSkeleton';
 
 // TanStack Query fetch function by product id
-const fetchProduct = async (id) => {
-  const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
 
-  return response.data;
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/api/products`
+    );
+
+    setProducts(res.data);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch products");
+  } finally {
+    setLoading(false);
+  }
 };
 
 const ProductDetail = () => {
