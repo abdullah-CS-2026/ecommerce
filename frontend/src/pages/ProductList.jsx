@@ -16,10 +16,13 @@ const ProductList = () => {
 
   // Filter States
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState('All');
   const [priceRange, setPriceRange] = useState(1000000); // PKR scale - increased to accommodate all products
   const [rating, setRating] = useState(0);
   const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
 
   const categories = ['All', 'Mobiles', 'Laptops', 'TV', 'Audio', 'Wearables', 'Accessories'];
 
@@ -28,11 +31,13 @@ const ProductList = () => {
       setLoading(true);
       setFetchError(null);
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products`);
+       const res = await
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/productlist?page=${page}`)
         if (!res.ok) throw new Error('Failed to load professional inventory.');
         const data = await res.json();
-        setAllProducts(data);
-        setProducts(data);
+        setAllProducts(data.products);
+setProducts(data.products);
+setTotalPages(data.totalPages);
       } catch (err) {
         setFetchError(err.message);
       } finally {
@@ -40,12 +45,27 @@ const ProductList = () => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [page]);
+
+//Whenever a dependency changes, React first executes  return () => clearTimeout(timer1);
+// So
+// timer1 ❌ cancelled
+// Then React runs the effect again.
+// timer2 ✅ setTimeout is called again
+  useEffect(()=>{
+    const timer = setTimeout(()=>{
+      setDebouncedSearch(search);
+
+    }, 500)
+
+  return ()=> clearTimeout(timer);
+
+  },[search])
 
   useEffect(() => {
     let filtered = [...allProducts];
-
-    if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    console.log(debouncedSearch);
+    if (debouncedSearch) filtered = filtered.filter(p => p.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
     if (category !== 'All') filtered = filtered.filter(p => p.category === category);
     filtered = filtered.filter(p => p.discountPrice <= priceRange);
     if (rating > 0) filtered = filtered.filter(p => p.rating >= rating);
@@ -55,7 +75,7 @@ const ProductList = () => {
     else if (sort === 'popularity') filtered.sort((a, b) => (b.numReviews || 0) - (a.numReviews || 0));
 
     setProducts(filtered);
-  }, [search, category, priceRange, rating, sort, allProducts]);
+  }, [debouncedSearch, category, priceRange, rating, sort, allProducts]);
 
   if (fetchError) {
     return (
@@ -194,6 +214,7 @@ const ProductList = () => {
               </button>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map(product => (
                 <div key={product._id} className="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 flex flex-col h-full relative">
@@ -268,8 +289,52 @@ const ProductList = () => {
                 </div>
               ))}
             </div>
+            {/* Pagination */}
+{!loading && totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-12">
+    {/* Previous Button */}
+    <button
+      onClick={() => setPage((prev) => prev - 1)}
+      disabled={page === 1}
+      className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Previous
+    </button>
+
+    {/* Page Numbers */}
+    {Array.from({ length: totalPages }, (_, index) => {
+      const pageNumber = index + 1;
+
+      return (
+        <button
+          key={pageNumber}
+          onClick={() => setPage(pageNumber)}
+          className={`w-10 h-10 rounded-lg font-semibold transition ${
+            page === pageNumber
+              ? "bg-primary text-white shadow-md"
+              : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
+          }`}
+        >
+          {pageNumber}
+        </button>
+      );
+    })}
+
+    {/* Next Button */}
+    <button
+      onClick={() => setPage((prev) => prev + 1)}
+      disabled={page === totalPages}
+      className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Next
+    </button>
+  </div>
+)}
+</>
+            
           )}
         </div>
+      
       </div>
     </div>
   );

@@ -27,13 +27,19 @@ const AdminProducts = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [page]);
+  }, [page,searchTerm]);
+
+
+  useEffect(() => {
+  setPage(1);
+}, [searchTerm]);
 
   const fetchProducts = async () => {
     try {
 
       setLoading(true);
-      const res = await axios.get( `${import.meta.env.VITE_BACKEND_URL}/api/admin/products?page=${page}`);
+      const res = await axios.get(
+  `${import.meta.env.VITE_BACKEND_URL}/api/admin/products?page=${page}&search=${searchTerm}`);
       console.log(res.data);
      setProducts(res.data.products);
 setTotalPages(res.data.totalPages);
@@ -55,12 +61,6 @@ setTotalPages(res.data.totalPages);
       }
     }
   };
-
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.brand?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -105,7 +105,7 @@ setTotalPages(res.data.totalPages);
 
           <AdminProductsSkeleton />
         )
-          : filteredProducts.length === 0 ? (
+          : products.length === 0 ? (
             <div className="p-12 sm:p-32 text-center flex flex-col items-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-50 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">📦</div>
               <h3 className="text-lg sm:text-xl font-black text-slate-900">Inventory Empty</h3>
@@ -126,7 +126,7 @@ setTotalPages(res.data.totalPages);
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredProducts.map((product) => (
+                    {products.map((product) => (
                       <tr key={product._id} className="hover:bg-primary/[0.02] transition-colors group">
                         <td className="px-8 py-6">
                           <div className="flex items-center space-x-6">
@@ -232,6 +232,7 @@ setTotalPages(res.data.totalPages);
                               className="p-3 text-slate-400 hover:text-white hover:bg-red-600 rounded-xl transition-all shadow-sm"
                               title="Delete"
                             >
+                              
                               <Trash2 size={20} />
                             </button>
                           </div>
@@ -244,7 +245,7 @@ setTotalPages(res.data.totalPages);
 
               {/* Mobile / tablet card list - same data + same handlers, stacked layout */}
               <div className="lg:hidden divide-y divide-slate-100">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <div key={product._id} className="p-5 space-y-4">
                     <div className="flex items-start space-x-4">
                       <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden flex-shrink-0 border-2 border-white shadow-md">
@@ -327,27 +328,30 @@ setTotalPages(res.data.totalPages);
 
               </div>
 
-              <div className="flex justify-center items-center gap-2 py-6">
-                <button
-                  onClick={() => setPage(prev=>prev - 1)}
-                  disabled={page === 1}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
-                >
-                  Previous
-                </button>
+             <div className="flex justify-center items-center gap-3 py-8">
+  {/* Previous Button */}
+  <button
+    onClick={() => setPage(prev => prev - 1)}
+    disabled={page === 1}
+    className="px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hover:border-slate-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    Previous
+  </button>
 
-                <span>
-                  Page {page} of {totalPages}
-                </span>
+  {/* Current Page */}
+  <div className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold shadow-md">
+    Page {page} of {totalPages}
+  </div>
 
-                <button
-                  onClick={() => setPage(prev=>prev + 1)}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+  {/* Next Button */}
+  <button
+    onClick={() => setPage(prev => prev + 1)}
+    disabled={page === totalPages}
+    className="px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hover:border-slate-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    Next
+  </button>
+</div>
 
             </>
           )}

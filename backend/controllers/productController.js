@@ -52,6 +52,69 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+exports.getProductList = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 9,
+      category,
+      brand,
+      search,
+      sort,
+    } = req.query;
+
+    let query = {};
+
+    if (category && category !== "All")
+      query.category = category;
+
+    if (brand)
+      query.brand = brand;
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    let productsQuery = Product.find(query)
+      .skip(skip)
+      .limit(limitNumber);
+
+    if (sort === "priceLowToHigh")
+      productsQuery = productsQuery.sort({ discountPrice: 1 });
+    else if (sort === "priceHighToLow")
+      productsQuery = productsQuery.sort({ discountPrice: -1 });
+    else if (sort === "popularity")
+      productsQuery = productsQuery.sort({ numReviews: -1 });
+    else
+      productsQuery = productsQuery.sort({ createdAt: -1 });
+
+    const products = await productsQuery.lean();
+
+    const totalProducts = await Product.countDocuments(query);
+
+    res.json({
+      products,
+      page: pageNumber,
+      totalPages: Math.ceil(totalProducts / limitNumber),
+      totalProducts,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Error fetching products",
+    });
+  }
+};
 
 
 exports.getProductById = async (req, res) => {
